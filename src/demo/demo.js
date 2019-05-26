@@ -1,4 +1,4 @@
-import MergedInput from "../plugin/main";
+import MergedInput from "../main";
 
 export default class Demo extends Phaser.Scene {
 

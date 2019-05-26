@@ -7,7 +7,7 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 module.exports = {
     mode: 'production',
     watch: false,
-    context: `${__dirname}/src/plugin/`,
+    context: `${__dirname}/src/`,
     entry: {
         MergedInput: './main.js',
         'MergedInput.min': './main.js'

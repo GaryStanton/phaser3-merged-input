@@ -13,7 +13,7 @@ var definePlugin = new webpack.DefinePlugin({
 module.exports = {
     mode: 'development',
     entry: {
-        customPlugin: './src/plugin/main.js',
+        customPlugin: './src/main.js',
         demo: [
             'babel-polyfill',
             path.resolve(__dirname, 'src/demo/main.js')
