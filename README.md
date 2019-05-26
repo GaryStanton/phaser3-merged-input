@@ -18,7 +18,7 @@ Each player object contains direction and button actions. These are updated by t
 ## Setup
 Set up a player object for each player in your game with `addPlayer()`.
 Then assign keys to each action with the `defineKey()` function, e.g.
-```
+```javascript
 var player1 = mergedInput.addPlayer();
 mergedInput.defineKey(0, 'UP', 'W')
     .defineKey(0, 'DOWN', 'S')
@@ -41,7 +41,7 @@ mergedInput.defineKey(0, 'UP', 'UP')
 ```
 
 Then, interrogate your player objects to check for the state of the _action_, rather than the key, e.g.
-```
+```javascript
     if(player1.direction.DOWN) {
         // Move your player down
     }
