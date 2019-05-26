@@ -30,14 +30,14 @@ mergedInput.defineKey(0, 'UP', 'W')
     .defineKey(0, 'B3', 'P')
 
 var player2 = mergedInput.addPlayer();
-mergedInput.defineKey(0, 'UP', 'UP')
-    .defineKey(0, 'DOWN', 'DOWN')
-    .defineKey(0, 'LEFT', 'LEFT')
-    .defineKey(0, 'RIGHT', 'RIGHT')
-    .defineKey(0, 'B0', 'NUMPAD_0')
-    .defineKey(0, 'B1', 'NUMPAD_1')
-    .defineKey(0, 'B2', 'NUMPAD_2')
-    .defineKey(0, 'B3', 'NUMPAD_3')
+mergedInput.defineKey(1, 'UP', 'UP')
+    .defineKey(1, 'DOWN', 'DOWN')
+    .defineKey(1, 'LEFT', 'LEFT')
+    .defineKey(1, 'RIGHT', 'RIGHT')
+    .defineKey(1, 'B0', 'NUMPAD_0')
+    .defineKey(1, 'B1', 'NUMPAD_1')
+    .defineKey(1, 'B2', 'NUMPAD_2')
+    .defineKey(1, 'B3', 'NUMPAD_3')
 ```
 
 Then, interrogate your player objects to check for the state of the _action_, rather than the key, e.g.
