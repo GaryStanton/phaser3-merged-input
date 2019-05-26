@@ -1,0 +1,377 @@
+{
+	"textures": [
+		{
+			"image": "gamepad.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 96,
+				"h": 1454
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "XboxOne_Dpad",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 94,
+						"h": 94
+					},
+					"frame": {
+						"x": 1,
+						"y": 1,
+						"w": 94,
+						"h": 94
+					}
+				},
+				{
+					"filename": "XboxOne_Dpad_Down",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 94,
+						"h": 94
+					},
+					"frame": {
+						"x": 1,
+						"y": 97,
+						"w": 94,
+						"h": 94
+					}
+				},
+				{
+					"filename": "XboxOne_Dpad_Left",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 94,
+						"h": 94
+					},
+					"frame": {
+						"x": 1,
+						"y": 193,
+						"w": 94,
+						"h": 94
+					}
+				},
+				{
+					"filename": "XboxOne_Dpad_Right",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 94,
+						"h": 94
+					},
+					"frame": {
+						"x": 1,
+						"y": 289,
+						"w": 94,
+						"h": 94
+					}
+				},
+				{
+					"filename": "XboxOne_Dpad_Up",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 3,
+						"w": 94,
+						"h": 94
+					},
+					"frame": {
+						"x": 1,
+						"y": 385,
+						"w": 94,
+						"h": 94
+					}
+				},
+				{
+					"filename": "XboxOne_Left_Stick",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 4,
+						"y": 5,
+						"w": 92,
+						"h": 91
+					},
+					"frame": {
+						"x": 1,
+						"y": 481,
+						"w": 92,
+						"h": 91
+					}
+				},
+				{
+					"filename": "XboxOne_Right_Stick",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 4,
+						"y": 5,
+						"w": 92,
+						"h": 91
+					},
+					"frame": {
+						"x": 1,
+						"y": 574,
+						"w": 92,
+						"h": 91
+					}
+				},
+				{
+					"filename": "XboxOne_LB",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 26,
+						"w": 90,
+						"h": 49
+					},
+					"frame": {
+						"x": 1,
+						"y": 667,
+						"w": 90,
+						"h": 49
+					}
+				},
+				{
+					"filename": "XboxOne_RB",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 5,
+						"y": 26,
+						"w": 90,
+						"h": 49
+					},
+					"frame": {
+						"x": 1,
+						"y": 718,
+						"w": 90,
+						"h": 49
+					}
+				},
+				{
+					"filename": "XboxOne_A",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 8,
+						"w": 84,
+						"h": 84
+					},
+					"frame": {
+						"x": 1,
+						"y": 769,
+						"w": 84,
+						"h": 84
+					}
+				},
+				{
+					"filename": "XboxOne_B",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 8,
+						"w": 84,
+						"h": 84
+					},
+					"frame": {
+						"x": 1,
+						"y": 855,
+						"w": 84,
+						"h": 84
+					}
+				},
+				{
+					"filename": "XboxOne_X",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 8,
+						"w": 84,
+						"h": 84
+					},
+					"frame": {
+						"x": 1,
+						"y": 941,
+						"w": 84,
+						"h": 84
+					}
+				},
+				{
+					"filename": "XboxOne_Y",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 8,
+						"w": 84,
+						"h": 84
+					},
+					"frame": {
+						"x": 1,
+						"y": 1027,
+						"w": 84,
+						"h": 84
+					}
+				},
+				{
+					"filename": "XboxOne_LT",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 9,
+						"y": 6,
+						"w": 82,
+						"h": 88
+					},
+					"frame": {
+						"x": 1,
+						"y": 1113,
+						"w": 82,
+						"h": 88
+					}
+				},
+				{
+					"filename": "XboxOne_RT",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 9,
+						"y": 6,
+						"w": 82,
+						"h": 88
+					},
+					"frame": {
+						"x": 1,
+						"y": 1203,
+						"w": 82,
+						"h": 88
+					}
+				},
+				{
+					"filename": "XboxOne_Menu",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 11,
+						"w": 80,
+						"h": 79
+					},
+					"frame": {
+						"x": 1,
+						"y": 1293,
+						"w": 80,
+						"h": 79
+					}
+				},
+				{
+					"filename": "XboxOne_Windows",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 100,
+						"h": 100
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 11,
+						"w": 80,
+						"h": 79
+					},
+					"frame": {
+						"x": 1,
+						"y": 1374,
+						"w": 80,
+						"h": 79
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:f5f80bd0d6597954858ec9f87b373854:fe77e1ba7f34b0c980b2916d93901cd0:1c9586ece4449c8026f8e901f073f4a8$"
+	}
+}
