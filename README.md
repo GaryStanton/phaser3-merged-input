@@ -1,5 +1,5 @@
 # Merged input plugin for Phaser 3
-A Phaser 3 plugin to map input from kayboard & gamepad to player actions.
+A Phaser 3 plugin to map input from keyboard & gamepad to player actions.
 
 The merged input plugin listens to input from keyboard & gamepad, updating ‘player’ objects that you may interrogate instead of writing separate input handlers in your game.
 Each player object contains direction and button actions. These are updated by the corresponding gamepad input, as well as any keys that you assign to the action.
