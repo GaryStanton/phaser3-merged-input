@@ -343,7 +343,6 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
                 buttons['B' + button.index] = button.value;
             }
 
-
             for (var a = 0; a < pad.axes.length; a++) {
                 let axis = pad.axes[a];
                 axes['A' + axis.index] = axis.getValue();
@@ -357,7 +356,15 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
             });
         }
         
-        debug.players = this.players;
+        debug.players = [];
+        for (let thisPlayer of this.players) {
+            debug.players.push({
+                'interaction': thisPlayer.interaction,
+                'device': thisPlayer.device,
+                'buttons': thisPlayer.buttons,
+                'keys': thisPlayer.keys
+            })
+        }
 
 		return debug;
     }
