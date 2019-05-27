@@ -637,7 +637,36 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                 });
             }
 
-            debug.players = this.players;
+            debug.players = [];
+            var _iteratorNormalCompletion7 = true;
+            var _didIteratorError7 = false;
+            var _iteratorError7 = undefined;
+
+            try {
+                for (var _iterator7 = this.players[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+                    var thisPlayer = _step7.value;
+
+                    debug.players.push({
+                        'interaction': thisPlayer.interaction,
+                        'device': thisPlayer.device,
+                        'buttons': thisPlayer.buttons,
+                        'keys': thisPlayer.keys
+                    });
+                }
+            } catch (err) {
+                _didIteratorError7 = true;
+                _iteratorError7 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                        _iterator7.return();
+                    }
+                } finally {
+                    if (_didIteratorError7) {
+                        throw _iteratorError7;
+                    }
+                }
+            }
 
             return debug;
         }
