@@ -61,6 +61,11 @@ Install with `npm install`, then use `npm run dev` to spin up a development serv
 Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
+## Changelog
+v1.1.0 - 2020-04-19
+Plugin now handles secondary directional movement from the second stick on a gamepad, or the direcion of travel of a mouse (first player only);
+Bearings and degrees have been added to direction objects.
+
 ## Credits
 Written by [Gary Stanton](https://garystanton.co.uk)  
 Built from the [Plugin Starter Kit](https://github.com/nkholski/phaser-plugin-starter) by Niklas Berg  
