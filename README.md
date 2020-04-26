@@ -1,12 +1,12 @@
 # Merged input plugin for Phaser 3
-A Phaser 3 plugin to map input from keyboard & gamepad to player actions.
+A Phaser 3 plugin to map input from keyboard, gamepad & mouse to player actions.
 
-The merged input plugin listens to input from keyboard & gamepad, updating ‘player’ objects that you may interrogate instead of writing separate input handlers in your game.
+The merged input plugin listens to input from keyboard, connected gamepads and the mouse pointer, updating ‘player’ objects that you may interrogate instead of writing separate input handlers in your game.
 Each player object contains direction and button actions. These are updated by the corresponding gamepad input, as well as any keys that you assign to the action.
 
 ## Benefits 
 . Single place to handle all your input.  
-. Keyboard and Gamepad input is amalgamated.  
+. Keyboard, Gamepad & Mouse input is amalgamated.  
 . Handle input for multiple player objects to easily create multiplayer games.  
 . Assign and reassign keys to actions for each player, allowing for ‘redefine keys’ function.  
 . Assign multiple keys to a single action.  
@@ -19,7 +19,7 @@ Each player object contains direction and button actions. These are updated by t
 Set up a player object for each player in your game with `addPlayer()`.
 Then assign keys to each action with the `defineKey()` function, e.g.
 ```javascript
-var player1 = mergedInput.addPlayer();
+var player1 = mergedInput.addPlayer(0);
 mergedInput.defineKey(0, 'UP', 'W')
     .defineKey(0, 'DOWN', 'S')
     .defineKey(0, 'LEFT', 'A')
@@ -29,7 +29,7 @@ mergedInput.defineKey(0, 'UP', 'W')
     .defineKey(0, 'B2', 'O')
     .defineKey(0, 'B3', 'P')
 
-var player2 = mergedInput.addPlayer();
+var player2 = mergedInput.addPlayer(1);
 mergedInput.defineKey(1, 'UP', 'UP')
     .defineKey(1, 'DOWN', 'DOWN')
     .defineKey(1, 'LEFT', 'LEFT')
@@ -63,8 +63,12 @@ Build the plugin including minified version. Targets the dist folder.
 
 ## Changelog
 v1.1.0 - 2020-04-19
-Plugin now handles secondary directional movement from the second stick on a gamepad, or the direcion of travel of a mouse (first player only);
+Plugin now handles secondary directional movement from the second stick on a gamepad.
 Bearings and degrees have been added to direction objects.
+
+v1.2.0 - 2020-04-27
+You are now able to pass a player's X/Y position to a player object, whereupon the position of the mouse in relation to that player will be used to determine mouse bearings and degrees
+
 
 ## Credits
 Written by [Gary Stanton](https://garystanton.co.uk)  
@@ -76,8 +80,8 @@ Demo sprites by [Nicolae Berbece](https://opengameart.org/content/free-keyboard-
 ## Functions
 
 <dl>
-<dt><a href="#addPlayer">addPlayer()</a></dt>
-<dd><p>Add a new player object to the players array</p>
+<dt><a href="#addPlayer">addPlayer(index)</a></dt>
+<dd><p>Add a new player object to the players array. <br/>If an index is provided and a player object at that index already exists, this will be returned instead of another object created</p>
 </dd>
 <dt><a href="#getPlayer">getPlayer(thisPlayer)</a></dt>
 <dd><p>Get player object</p>
@@ -86,7 +90,7 @@ Demo sprites by [Nicolae Berbece](https://opengameart.org/content/free-keyboard-
 <dd><p>Returns a struct to hold input control information
 Set up a struct for each player in the game
 Direction and Buttons contain the input from the devices
-The keys struct contains arrays of keyboard characters that will trigger the action</p>
+The keys struct contains arrays of keyboard characters or mouse buttons that will trigger the action</p>
 </dd>
 <dt><a href="#defineKey">defineKey(player, action, value, append)</a></dt>
 <dd><p>Define a key for a player/action combination</p>
@@ -110,7 +114,11 @@ The event contains a reference to the player assigned to the gamepad, and passes
 <a name="addPlayer"></a>
 
 ## addPlayer()
-Add a new player object to the players array
+Add a new player object to the players array  
+
+| Param | Type |
+| --- | --- |
+| index | <code>number</code> | 
 
 
 <a name="getPlayer"></a>
