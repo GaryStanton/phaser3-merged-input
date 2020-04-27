@@ -1,6 +1,6 @@
 {
   "name": "phaser3-merged-input",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A Phaser 3 plugin to handle input from kayboard & gamepad",
   "main": "src/main.js",
   "scripts": {
