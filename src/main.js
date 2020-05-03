@@ -19,61 +19,61 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
         // Keys object to store Phaser key objects. We'll check these during update
         this.keys = {};
 
-        this.bearings = {
-            '-180': 'W',
-            '-168.75': 'WBN',
-            '-157.5': 'WNW',
-            '-146.25': 'NWBW',
-            '-135': 'NW',
-            '-123.75': 'NWBN',
-            '-112.5': 'NNW',
-            '-101.25': 'NBW',
-            '-90': 'N',
-            '-78.75': 'NBE',
-            '-67.5': 'NNE',
-            '-56.25': 'NEBN',
-            '-45': 'NE',
-            '-33.75': 'NEBE',
-            '-22.5': 'EBE',
-            '-11.25': 'EBN',
-            '0': 'E',
-            '11.25': 'EBS',
-            '22.5': 'ESE',
-            '33.75': 'SEBE',
-            '45': 'SE',
-            '56.25': 'SEBS',
-            '67.5': 'SSE',
-            '78.75': 'SBE',
-            '90': 'S',
-            '101.25': 'SBW',
-            '112.5': 'SSW',
-            '123.75': 'SWBS',
-            '135': 'SW',
-            '146.25': 'SWBW',
-            '157.5': 'WSW',
-            '168.75': 'WBS',
-            '180': 'W'
-        };
+		this.bearings = {
+			'-180': 'W',
+			'-168.75': 'WBN',
+			'-157.5': 'WNW',
+			'-146.25': 'NWBW',
+			'-135': 'NW',
+			'-123.75': 'NWBN',
+			'-112.5': 'NNW',
+			'-101.25': 'NBW',
+			'-90': 'N',
+			'-78.75': 'NBE',
+			'-67.5': 'NNE',
+			'-56.25': 'NEBN',
+			'-45': 'NE',
+			'-33.75': 'NEBE',
+			'-22.5': 'EBE',
+			'-11.25': 'EBN',
+			'0': 'E',
+			'11.25': 'EBS',
+			'22.5': 'ESE',
+			'33.75': 'SEBE',
+			'45': 'SE',
+			'56.25': 'SEBS',
+			'67.5': 'SSE',
+			'78.75': 'SBE',
+			'90': 'S',
+			'101.25': 'SBW',
+			'112.5': 'SSW',
+			'123.75': 'SWBS',
+			'135': 'SW',
+			'146.25': 'SWBW',
+			'157.5': 'WSW',
+			'168.75': 'WBS',
+			'180': 'W'
+		};
     }
 
     boot() {
         this.eventEmitter = this.systems.events;
         this.eventEmitter.on('update', this.update, this);
 
-        // Gamepad
+		// Gamepad
         if (typeof this.systems.input.gamepad !== 'undefined') {
             this.systems.input.gamepad.once('connected', function (thisGamepad) {
-                this.setupGamepad(thisGamepad)
+				this.setupGamepad(thisGamepad)
             }, this);
-            this.gamepads = this.systems.input.gamepad.gamepads;
+			this.gamepads = this.systems.input.gamepad.gamepads;
 
-            // Check to see if the gamepad has already been setup by the browser
-            this.systems.input.gamepad.refreshPads();
-            if (this.systems.input.gamepad.total) {
-                for (let thisGamepad of this.systems.input.gamepad.gamepads) {
-                    this.systems.input.gamepad.emit('connected', thisGamepad);
-                }
-            }
+			// Check to see if the gamepad has already been setup by the browser
+			this.systems.input.gamepad.refreshPads();
+			if (this.systems.input.gamepad.total) {
+				for (let thisGamepad of this.systems.input.gamepad.gamepads) {
+					this.systems.input.gamepad.emit('connected', thisGamepad);
+				}
+			}
         }
 
         // Keyboard
@@ -90,23 +90,23 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
             if (playerIndex > -1) {
                 this.getPlayer(playerIndex).interaction.device = 'keyboard';
             }
-        }, this);
+		}, this);
 
 
-        // Pointer
-        this.systems.input.mouse.disableContextMenu();
+		// Pointer
+		this.systems.input.mouse.disableContextMenu();
 
-        this.systems.input.on('pointermove', function (pointer) {
-            this.pointerMove(pointer);
-        }, this);
+		this.systems.input.on('pointermove', function (pointer) {
+			this.pointerMove(pointer);
+		}, this);
 
-        this.systems.input.on('pointerdown', function (pointer) {
-            this.pointerDown(pointer);
-        }, this);
+		this.systems.input.on('pointerdown', function (pointer) {
+			this.pointerDown(pointer);
+		}, this);
 
-        this.systems.input.on('pointerup', function (pointer) {
-            this.pointerUp(pointer);
-        }, this);
+		this.systems.input.on('pointerup', function (pointer) {
+			this.pointerUp(pointer);
+		}, this);
     }
 
     update() {
@@ -117,55 +117,55 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
             }
             if (thisPlayer.interaction.pressed != '') {
                 thisPlayer.interaction.buffer = '';
-            }
+			}
 
-            // If the pointer hasn't moved, and the scene has changed, this can end up as undefined
-            thisPlayer.pointer.BEARING                  = typeof thisPlayer.pointer.BEARING != 'undefined' ? thisPlayer.pointer.BEARING : '';
-            thisPlayer.pointer.BEARING_DEGREES          = typeof thisPlayer.pointer.BEARING_DEGREES != 'undefined' ? thisPlayer.pointer.BEARING_DEGREES : '';
-            thisPlayer.pointer.ANGLE                    = typeof thisPlayer.pointer.ANGLE != 'undefined' ? thisPlayer.pointer.ANGLE : '';
+			// If the pointer hasn't moved, and the scene has changed, this can end up as undefined
+			thisPlayer.pointer.BEARING 					= typeof thisPlayer.pointer.BEARING != 'undefined' ? thisPlayer.pointer.BEARING : '';
+			thisPlayer.pointer.BEARING_DEGREES 			= typeof thisPlayer.pointer.BEARING_DEGREES != 'undefined' ? thisPlayer.pointer.BEARING_DEGREES : 0;
+			thisPlayer.pointer.ANGLE 					= typeof thisPlayer.pointer.ANGLE != 'undefined' ? thisPlayer.pointer.ANGLE : '';
 
 
-            thisPlayer.direction.BEARING                = this.mapDirectionsToBearing(thisPlayer.direction);
-            thisPlayer.direction.BEARING_LAST           = thisPlayer.direction.BEARING != '' ? thisPlayer.direction.BEARING : thisPlayer.direction.BEARING_LAST;
-            thisPlayer.direction.DEGREES                = thisPlayer.direction.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING)) : 0;
-            thisPlayer.direction.DEGREES_LAST           = thisPlayer.direction.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING_LAST)) : 0;
-            thisPlayer.direction_secondary.BEARING      = this.mapDirectionsToBearing(thisPlayer.direction_secondary);
-            thisPlayer.direction_secondary.BEARING_LAST = thisPlayer.direction_secondary.BEARING != '' ? thisPlayer.direction_secondary.BEARING : thisPlayer.direction_secondary.BEARING_LAST;
-            thisPlayer.direction_secondary.DEGREES      = thisPlayer.direction_secondary.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING)) : 0;
-            thisPlayer.direction_secondary.DEGREES_LAST = thisPlayer.direction_secondary.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING_LAST)) : 0;
+			thisPlayer.direction.BEARING 				= this.mapDirectionsToBearing(thisPlayer.direction);
+			thisPlayer.direction.BEARING_LAST 			= thisPlayer.direction.BEARING != '' ? thisPlayer.direction.BEARING : thisPlayer.direction.BEARING_LAST;
+			thisPlayer.direction.DEGREES 				= thisPlayer.direction.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING)) : 0;
+			thisPlayer.direction.DEGREES_LAST 			= thisPlayer.direction.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING_LAST)) : 0;
+			thisPlayer.direction_secondary.BEARING 		= this.mapDirectionsToBearing(thisPlayer.direction_secondary);
+			thisPlayer.direction_secondary.BEARING_LAST = thisPlayer.direction_secondary.BEARING != '' ? thisPlayer.direction_secondary.BEARING : thisPlayer.direction_secondary.BEARING_LAST;
+			thisPlayer.direction_secondary.DEGREES 		= thisPlayer.direction_secondary.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING)) : 0;
+			thisPlayer.direction_secondary.DEGREES_LAST = thisPlayer.direction_secondary.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING_LAST)) : 0;
         }
 
         this.checkKeyboardInput();
-        this.checkGamepadInput();
-        this.checkPointerInput();
+		this.checkGamepadInput();
+		this.checkPointerInput();
     }
 
-    /**
-     * Set up the gamepad and associate with a player object
-     */
-    setupGamepad(thisGamepad) {
-        thisGamepad.on('down', this.gamepadButtonDown, this);
-        thisGamepad.on('up', this.gamepadButtonUp, this);
-        this.eventEmitter.emit('mergedInput', {device:'gamepad', id:thisGamepad.id, player:thisGamepad.index, action:'Connected'});
-        if (typeof this.players[thisGamepad.index] === 'undefined') {
-            this.addPlayer();
-        }
-        this.players[thisGamepad.index].gamepad = thisGamepad;
-    }
+	/**
+	 * Set up the gamepad and associate with a player object
+	 */
+	setupGamepad(thisGamepad) {
+		thisGamepad.on('down', this.gamepadButtonDown, this);
+		thisGamepad.on('up', this.gamepadButtonUp, this);
+		this.eventEmitter.emit('mergedInput', {device:'gamepad', id:thisGamepad.id, player:thisGamepad.index, action:'Connected'});
+		if (typeof this.players[thisGamepad.index] === 'undefined') {
+			this.addPlayer();
+		}
+		this.players[thisGamepad.index].gamepad = thisGamepad;
+	}
 
     /**
      * Add a new player object to the players array
-     * @param {number} index Player index - if a player object at this index already exists, it will be returned instead of creating a new player object
+	 * @param {number} index Player index - if a player object at this index already exists, it will be returned instead of creating a new player object
      */
     addPlayer(index) {
-        if (typeof Number.isInteger(index) && typeof this.players[index] !== 'undefined') {
-            return this.players[index];
-        }
-        else {
-            this.players.push(this.setupControls());
-            this.players[this.players.length-1].index = this.players.length-1;
-            return this.players[this.players.length-1];
-        }
+		if (typeof Number.isInteger(index) && typeof this.players[index] !== 'undefined') {
+			return this.players[index];
+		}
+		else {
+			this.players.push(this.setupControls());
+			this.players[this.players.length-1].index = this.players.length-1;
+			return this.players[this.players.length-1];
+		}
     }
 
     /**
@@ -202,34 +202,37 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
                 'UP': 0,
                 'DOWN': 0,
                 'LEFT': 0,
-                'RIGHT': 0,
-                'BEARING': '',
-                'BEARING_LAST': '',
-                'DEGREES': 0,
-                'DEGREES_LAST': 0
-            },
+				'RIGHT': 0,
+				'BEARING': '',
+				'BEARING_LAST': '',
+				'DEGREES': 0,
+				'DEGREES_LAST': 0,
+				'TIMESTAMP': 0
+			},
             'direction_secondary': {
                 'UP': 0,
                 'DOWN': 0,
                 'LEFT': 0,
-                'RIGHT': 0,
-                'BEARING': '',
-                'DEGREES': 0,
-                'BEARING_LAST': '',
-                'DEGREES_LAST': 0
+				'RIGHT': 0,
+				'BEARING': '',
+				'DEGREES': 0,
+				'BEARING_LAST': '',
+				'DEGREES_LAST': 0,
+				'TIMESTAMP': 0
             },
             'buttons': {},
-            'pointer': {
-                'M1': 0,
-                'M2': 0,
-                'M3': 0,
-                'M4': 0,
-                'M5': 0,
-                'BEARING': '',
-                'BEARING_DEGREES': 0,
-                'ANGLE': 0
-            },
-            'position': {},
+			'pointer': {
+				'M1': 0,
+				'M2': 0,
+				'M3': 0,
+				'M4': 0,
+				'M5': 0,
+				'BEARING': '',
+				'BEARING_DEGREES': 0,
+				'ANGLE': 0,
+				'TIMESTAMP': 0
+			},
+			'position': {},
             'interaction': {},
             'gamepad': {},
             'keys': {
@@ -237,7 +240,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
                 'DOWN': [],
                 'LEFT': [],
                 'RIGHT': [],
-            }
+			}
         }
         for (let i=1; i<=16; i++) {
             controls.buttons['B'+i] = 0;
@@ -267,8 +270,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
             this.addPlayer();
         }
 
-        if (['UP','DOWN','LEFT','RIGHT','B0','B1','B2','B3','B4','B5','B6','B7','B8','B9','B10','B11','B12','B13','B14','B15','B16'].includes(action)) {
-            if (append) {
+        if (['UP','DOWN','LEFT','RIGHT','ALT_UP','ALT_DOWN','ALT_LEFT','ALT_RIGHT','B0','B1','B2','B3','B4','B5','B6','B7','B8','B9','B10','B11','B12','B13','B14','B15','B16'].includes(action)) {
+            if (append && (typeof this.players[player].keys[action] !== 'undefined')) {
                 this.players[player].keys[action].push([value]);
             }
             else {
@@ -301,24 +304,35 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
                         // Update the last button state
                         thisPlayer.interaction.pressed = thisKey;
                         thisPlayer.interaction.buffer = thisKey;
-                        thisPlayer.interaction.last = thisKey;
+						thisPlayer.interaction.last = thisKey;
+
                     }
                     if(Phaser.Input.Keyboard.JustUp(this.keys[thisValue])) {
-                        this.eventEmitter.emit('mergedInput', {device:'keyboard', value:1, player:playerIndex, action:thisKey, state: 'UP'});
+						this.eventEmitter.emit('mergedInput', {device:'keyboard', value:1, player:playerIndex, action:thisKey, state: 'UP'});
                     }
                 }
 
                 // Set the action in the player object
                 if (['UP','DOWN','LEFT','RIGHT'].includes(thisKey)) {
-                    thisPlayer.direction[thisKey] = action;
+					thisPlayer.direction[thisKey] = action;
+					thisPlayer.direction.TIMESTAMP = this.scene.sys.time.now;
+				}
+                else if (['ALT_UP','ALT_DOWN','ALT_LEFT','ALT_RIGHT'].includes(thisKey)) {
+					thisPlayer.direction_secondary[thisKey.replace('ALT_', '')] = action;
+					if (action == 1) {
+						thisPlayer.direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+					}
                 }
                 else {
-                    thisPlayer.buttons[thisKey] = action;
+					thisPlayer.buttons[thisKey] = action;
+					if (action == 1) {
+						thisPlayer.buttons.TIMESTAMP = this.scene.sys.time.now;
+					}
                 }
 
                 // Set the latest interaction flag
                 if (action == 1) {
-                    thisPlayer.interaction.device = 'keyboard';
+					thisPlayer.interaction.device = 'keyboard';
                 }
             }
         }
@@ -330,18 +344,18 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
      * Iterate through players and check for interaction with defined pointer buttons
      */
     checkPointerInput() {
-        // Loop through players and check for button presses - use of 'entries()' gives us an index to use for the player
+		// Loop through players and check for button presses - use of 'entries()' gives us an index to use for the player
         for (let [playerIndex, thisPlayer] of this.players.entries()) {
             // Loop through all the keys assigned to this player
             for (var thisKey in thisPlayer.keys) {
-                for (var thisValue of thisPlayer.keys[thisKey]) { // Each definition for this key action
-                    if (['M1','M2','M3','M4','M5'].includes(thisValue[0])) {
-                        // Check to see if button is pressed (stored in P1, can't have two mice...)
-                        if (this.players[0].pointer[thisValue] == 1) {
-                            thisPlayer.buttons[thisKey] = 1;
-                        }
-                    }
-                }
+				for (var thisValue of thisPlayer.keys[thisKey]) { // Each definition for this key action
+					if (['M1','M2','M3','M4','M5'].includes(thisValue[0])) {
+						// Check to see if button is pressed (stored in P1, can't have two mice...)
+						if (this.players[0].pointer[thisValue] == 1) {
+							thisPlayer.buttons[thisKey] = 1;
+						}
+					}
+				}
             }
         }
     }
@@ -357,9 +371,9 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
      * @param {Phaser.Input.Gamepad.Button} button Phaser Button object
      */
     gamepadButtonDown(index, value, button){
-        this.players[button.pad.index].interaction.device = 'gamepad';
+		this.players[button.pad.index].interaction.device = 'gamepad';
 
-        this.eventEmitter.emit('mergedInput', {device:'gamepad', value:value, player:button.pad.index, action:'B' + index, state: 'DOWN'});
+		this.eventEmitter.emit('mergedInput', {device:'gamepad', value:value, player:button.pad.index, action:'B' + index, state: 'DOWN'});
 
         // DPad mapping
         if (index === 12) {
@@ -377,12 +391,15 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
         // Last button pressed
         if (![12,13,14,15].includes(index)) {
-            // Update the last button state
-
+			// Update the last button state
             this.players[button.pad.index].interaction.pressed = 'B' + index;
             this.players[button.pad.index].interaction.last = 'B' + index;
-            this.players[button.pad.index].interaction.buffer = 'B' + index;
-        }
+			this.players[button.pad.index].interaction.buffer = 'B' + index;
+			this.players[button.pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
+		}
+		else {
+			this.players[button.pad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+		}
     }
 
     /**
@@ -407,7 +424,15 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
         }
         if (index === 15) {
             this.eventEmitter.emit('mergedInput', {device:'gamepad', value:1, player:button.pad.index, action:'RIGHT', state: 'UP'});
-        }
+		}
+
+        if (![12,13,14,15].includes(index)) {
+			// Update the last button state
+			this.players[button.pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
+		}
+		else {
+			this.players[button.pad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+		}
     }
 
     /**
@@ -419,10 +444,12 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
             // Directions
             if (thisGamepad.leftStick.y < -0.5) {
-                this.players[thisGamepad.index].direction.UP = Math.abs(thisGamepad.leftStick.y)
+				this.players[thisGamepad.index].direction.UP = Math.abs(thisGamepad.leftStick.y)
+				this.players[thisGamepad.index].direction.TIMESTAMP	= this.scene.sys.time.now;
             }
             else if (thisGamepad.leftStick.y > 0.5) {
-                this.players[thisGamepad.index].direction.DOWN = thisGamepad.leftStick.y
+				this.players[thisGamepad.index].direction.DOWN = thisGamepad.leftStick.y
+				this.players[thisGamepad.index].direction.TIMESTAMP	= this.scene.sys.time.now;
             }
             else if (this.players[thisGamepad.index].interaction.device === 'gamepad') {
                 // DPad
@@ -431,39 +458,45 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
             }
 
             if (thisGamepad.leftStick.x < -0.5) {
-                this.players[thisGamepad.index].direction.LEFT = Math.abs(thisGamepad.leftStick.x)
+				this.players[thisGamepad.index].direction.LEFT = Math.abs(thisGamepad.leftStick.x)
+				this.players[thisGamepad.index].direction.TIMESTAMP	= this.scene.sys.time.now;
             }
             else if (thisGamepad.leftStick.x > 0.5) {
-                this.players[thisGamepad.index].direction.RIGHT = thisGamepad.leftStick.x
+				this.players[thisGamepad.index].direction.RIGHT = thisGamepad.leftStick.x
+				this.players[thisGamepad.index].direction.TIMESTAMP	= this.scene.sys.time.now;
             }
             else if (this.players[thisGamepad.index].interaction.device === 'gamepad') {
                 // DPad
                 this.players[thisGamepad.index].direction.LEFT = thisGamepad.left ? 1 : 0;
                 this.players[thisGamepad.index].direction.RIGHT = thisGamepad.right ? 1 : 0;
-            }
+			}
 
             // Secondary
             if (thisGamepad.rightStick.y < -0.5) {
-                this.players[thisGamepad.index].direction_secondary.UP = Math.abs(thisGamepad.rightStick.y)
+				this.players[thisGamepad.index].direction_secondary.UP = Math.abs(thisGamepad.rightStick.y)
+				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
             }
             else if (thisGamepad.rightStick.y > 0.5) {
-                this.players[thisGamepad.index].direction_secondary.DOWN = thisGamepad.rightStick.y
-            }
-            else {
-                this.players[thisGamepad.index].direction_secondary.UP = 0;
-                this.players[thisGamepad.index].direction_secondary.DOWN = 0;
-            }
+				this.players[thisGamepad.index].direction_secondary.DOWN = thisGamepad.rightStick.y
+				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+			}
+			else {
+				this.players[thisGamepad.index].direction_secondary.UP = 0;
+				this.players[thisGamepad.index].direction_secondary.DOWN = 0;
+			}
 
             if (thisGamepad.rightStick.x < -0.5) {
-                this.players[thisGamepad.index].direction_secondary.LEFT = Math.abs(thisGamepad.rightStick.x)
+				this.players[thisGamepad.index].direction_secondary.LEFT = Math.abs(thisGamepad.rightStick.x)
+				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
             }
             else if (thisGamepad.rightStick.x > 0.5) {
-                this.players[thisGamepad.index].direction_secondary.RIGHT = thisGamepad.rightStick.x
+				this.players[thisGamepad.index].direction_secondary.RIGHT = thisGamepad.rightStick.x
+				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
             }
-            else {
-                this.players[thisGamepad.index].direction_secondary.LEFT = 0;
-                this.players[thisGamepad.index].direction_secondary.RIGHT = 0;
-            }
+			else {
+				this.players[thisGamepad.index].direction_secondary.LEFT = 0;
+				this.players[thisGamepad.index].direction_secondary.RIGHT = 0;
+			}
 
             if (this.players[thisGamepad.index].interaction.device === 'gamepad') {
                 // Buttons
@@ -476,147 +509,150 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
     }
 
 
-    /**
-     * Function to run on pointer move.
-     * @param {*} pointer - The pointer object
-     */
-    pointerMove(pointer, threshold) {
-        var threshold = threshold || 0;
-        if (pointer.distance > threshold) {
-            let pointerDirection = this.getBearingFromAngle(pointer.angle, 8);
-            // this.players[0].direction_secondary = this.mapBearingToDirections(pointerDirection);
+	/**
+	 * Function to run on pointer move.
+	 * @param {*} pointer - The pointer object
+	 */
+	pointerMove(pointer, threshold) {
+		var threshold = threshold || 0;
+		if (pointer.distance > threshold) {
+			let pointerDirection = this.getBearingFromAngle(pointer.angle, 8);
+			// this.players[0].direction_secondary = this.mapBearingToDirections(pointerDirection);
 
-            // If we've been given a player position, return bearings and angles
-            if (typeof this.players[0] !== 'undefined' && this.players[0].position.x !== 'undefined') {
-                let position            = this.players[0].position;
-                let angleToPointer      = Phaser.Math.Angle.Between(position.x, position.y, pointer.worldX, pointer.worldY);
-                let pointerDirection    = this.getBearingFromAngle(angleToPointer, 8);
-                let pointerAngle        = this.mapBearingToDegrees(pointerDirection);
+			// If we've been given a player position, return bearings and angles
+			if (typeof this.players[0] !== 'undefined' && this.players[0].position.x !== 'undefined') {
+				let position 			= this.players[0].position;
+				let angleToPointer 		= Phaser.Math.Angle.Between(position.x, position.y, pointer.worldX, pointer.worldY);
+				let pointerDirection 	= this.getBearingFromAngle(angleToPointer, 8);
+				let pointerAngle 		= Number(this.mapBearingToDegrees(pointerDirection));
 
-                this.players[0].pointer.BEARING         = pointerDirection;
-                this.players[0].pointer.ANGLE           = angleToPointer;
-                this.players[0].pointer.BEARING_DEGREES = pointerAngle;
-            }
-        }
-    }
+				this.players[0].pointer.BEARING 		= pointerDirection;
+				this.players[0].pointer.ANGLE 			= angleToPointer;
+				this.players[0].pointer.BEARING_DEGREES	= pointerAngle;
+				this.players[0].pointer.TIMESTAMP		= this.scene.sys.time.now;
+			}
+		}
+	}
 
 
-    /**
-     * Function to run on pointer down. Indicates that Mx has been pressed, which should be listened to by the player object
-     * @param {*} pointer - The pointer object
-     */
-    pointerDown(pointer) {
-        let action = '';
-        this.players[0].interaction.device = 'pointer';
-        if (pointer.leftButtonDown()) {
-            action = 'M1';
-        }
-        if (pointer.rightButtonDown()) {
-            action = 'M2';
-        }
-        if (pointer.middleButtonDown()) {
-            action = 'M3';
-        }
-        if (pointer.backButtonDown()) {
-            action = 'M4';
-        }
-        if (pointer.forwardButtonDown()) {
-            action = 'M5';
-        }
+	/**
+	 * Function to run on pointer down. Indicates that Mx has been pressed, which should be listened to by the player object
+	 * @param {*} pointer - The pointer object
+	 */
+	pointerDown(pointer) {
+		let action = '';
+		this.players[0].interaction.device = 'pointer';
+		if (pointer.leftButtonDown()) {
+			action = 'M1';
+		}
+		if (pointer.rightButtonDown()) {
+			action = 'M2';
+		}
+		if (pointer.middleButtonDown()) {
+			action = 'M3';
+		}
+		if (pointer.backButtonDown()) {
+			action = 'M4';
+		}
+		if (pointer.forwardButtonDown()) {
+			action = 'M5';
+		}
 
         this.eventEmitter.emit('mergedInput', {device:'pointer', value:1, player:0, action:action, state: 'DOWN'});
 
-        this.players[0].pointer[action] = 1;
+		this.players[0].pointer[action] = 1;
 
-        // Update the last button state
-        this.players[0].interaction.pressed = action;
-        this.players[0].interaction.last = action;
-        this.players[0].interaction.buffer = action;
-    }
-
-
-    /**
-     * Function to run on pointer up. Indicates that Mx has been released, which should be listened to by the player object
-     * @param {*} pointer - The pointer object
-     */
-    pointerUp(pointer) {
-        let action = '';
-        if (pointer.leftButtonReleased()) {
-            action = 'M1';
-        }
-        if (pointer.rightButtonReleased()) {
-            action = 'M2';
-        }
-        if (pointer.middleButtonReleased()) {
-            action = 'M3';
-        }
-        if (pointer.backButtonReleased()) {
-            action = 'M4';
-        }
-        if (pointer.forwardButtonReleased()) {
-            action = 'M5';
-        }
-
-        this.eventEmitter.emit('mergedInput', {device:'pointer', value:1, player:0, action:action, state: 'UP'});
-
-        this.players[0].pointer[action] = 0;
-    }
+		// Update the last button state
+		this.players[0].interaction.pressed = action;
+		this.players[0].interaction.last = action;
+		this.players[0].interaction.buffer = action;
+		this.players[0].pointer.TIMESTAMP	= pointer.moveTime;
+	}
 
 
-    /**
-     * Get the bearing from a given angle
-     * @param {float} angle - Angle to use
-     * @param {number} numDirections - Number of possible directions (e.g. 4 for N/S/E/W)
-     */
-    getBearingFromAngle(angle, numDirections, threshold) {
-        var numDirections = numDirections || 8;
+	/**
+	 * Function to run on pointer up. Indicates that Mx has been released, which should be listened to by the player object
+	 * @param {*} pointer - The pointer object
+	 */
+	pointerUp(pointer) {
+		let action = '';
+		if (pointer.leftButtonReleased()) {
+			action = 'M1';
+		}
+		if (pointer.rightButtonReleased()) {
+			action = 'M2';
+		}
+		if (pointer.middleButtonReleased()) {
+			action = 'M3';
+		}
+		if (pointer.backButtonReleased()) {
+			action = 'M4';
+		}
+		if (pointer.forwardButtonReleased()) {
+			action = 'M5';
+		}
 
-        var snap_interval = Phaser.Math.PI2 / numDirections;
+		this.eventEmitter.emit('mergedInput', {device:'pointer', value:1, player:0, action:action, state: 'UP'});
 
-        var angleSnap       = Phaser.Math.Snap.To(angle, snap_interval);
-        var angleSnapDeg    = Phaser.Math.RadToDeg(angleSnap);
-        var angleSnapDir    = this.bearings[angleSnapDeg];
-
-        return angleSnapDir;
-    }
-
-
-    /**
-     * Given a bearing, return a direction object containing boolean flags for the four directions
-     * @param {*} bearing
-     */
-    mapBearingToDirections(bearing) {
-        let thisDirection = {
-            'UP': 0,
-            'DOWN': 0,
-            'LEFT': 0,
-            'RIGHT': 0,
-            'BEARING': bearing.toUpperCase()
-        }
-
-        if (bearing.toUpperCase().includes('W')) {
-            thisDirection.LEFT = 1;
-        }
-        if (bearing.toUpperCase().includes('E')) {
-            thisDirection.RIGHT = 1;
-        }
-        if (bearing.toUpperCase().includes('S')) {
-            thisDirection.DOWN = 1;
-        }
-        if (bearing.toUpperCase().includes('N')) {
-            thisDirection.UP = 1;
-        }
-
-        return thisDirection;
-    }
+		this.players[0].pointer[action] 	= 0;
+		this.players[0].pointer.TIMESTAMP	= this.scene.sys.time.now;
+	}
 
 
-    /**
-     * Given a directions object, return the applicable bearing (8 way only)
-     * @param {*} directions
-     */
-    mapDirectionsToBearing(directions, threshold) {
-        var threshold = threshold || -.5
+	/**
+	 * Get the bearing from a given angle
+	 * @param {float} angle - Angle to use
+	 * @param {number} numDirections - Number of possible directions (e.g. 4 for N/S/E/W)
+	 */
+	getBearingFromAngle(angle, numDirections, threshold) {
+		var numDirections = numDirections || 8;
+
+		var snap_interval = Phaser.Math.PI2 / numDirections;
+
+		var angleSnap 		= Phaser.Math.Snap.To(angle, snap_interval);
+		var angleSnapDeg 	= Phaser.Math.RadToDeg(angleSnap);
+		var angleSnapDir 	= this.bearings[angleSnapDeg];
+
+		return angleSnapDir;
+	}
+
+
+	/**
+	 * Given a bearing, return a direction object containing boolean flags for the four directions
+	 * @param {*} bearing
+	 */
+	mapBearingToDirections(bearing) {
+		let thisDirection = {
+			'UP': 0,
+			'DOWN': 0,
+			'LEFT': 0,
+			'RIGHT': 0,
+			'BEARING': bearing.toUpperCase()
+		}
+
+		if (bearing.toUpperCase().includes('W')) {
+			thisDirection.LEFT = 1;
+		}
+		if (bearing.toUpperCase().includes('E')) {
+			thisDirection.RIGHT = 1;
+		}
+		if (bearing.toUpperCase().includes('S')) {
+			thisDirection.DOWN = 1;
+		}
+		if (bearing.toUpperCase().includes('N')) {
+			thisDirection.UP = 1;
+		}
+
+		return thisDirection;
+	}
+
+
+	/**
+	 * Given a directions object, return the applicable bearing (8 way only)
+	 * @param {*} directions
+	 */
+	mapDirectionsToBearing(directions, threshold) {
+		var threshold = threshold || -.5
         if (directions.UP && !(directions.LEFT || directions.RIGHT)) {
             return 'N';
         }
@@ -640,22 +676,22 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
         }
         if (directions.LEFT && directions.UP) {
             return 'NW';
-        }
-        return '';
-    }
+		}
+		return '';
+	}
 
-    /**
-     * Given a bearing, return the snapped angle in degrees
-     * @param {*} bearing
-     */
-    mapBearingToDegrees(bearing) {
-        if (bearing != '') {
-            return Object.keys(this.bearings).find(key => this.bearings[key] === bearing);
-        }
-        else {
-            return '';
-        }
-    }
+	/**
+	 * Given a bearing, return the snapped angle in degrees
+	 * @param {*} bearing
+	 */
+	mapBearingToDegrees(bearing) {
+		if (bearing != '') {
+			return Object.keys(this.bearings).find(key => this.bearings[key] === bearing);
+		}
+		else {
+			return '';
+		}
+	}
 
 
     destroy() {
@@ -667,8 +703,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
      * Return debug object
      */
     debug() {
-        // Debug variables
-        var debug = {
+		// Debug variables
+		var debug = {
             'input' : {}
         };
         debug.input.gamepads = [];
@@ -700,14 +736,14 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
             debug.players.push({
                 'interaction': thisPlayer.interaction,
                 'device': thisPlayer.device,
-                'buttons': thisPlayer.buttons,
-                'pointer': thisPlayer.pointer,
-                'direction': thisPlayer.direction,
-                'direction_secondary': thisPlayer.direction_secondary,
-                'keys': thisPlayer.keys
+				'buttons': thisPlayer.buttons,
+				'pointer': thisPlayer.pointer,
+				'direction': thisPlayer.direction,
+				'direction_secondary': thisPlayer.direction_secondary,
+				'keys': thisPlayer.keys
             })
         }
 
-        return debug;
+		return debug;
     }
 }

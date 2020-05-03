@@ -6,11 +6,11 @@ export default class Demo extends Phaser.Scene {
         this.load.scenePlugin('mergedInput', MergedInput);
 		this.load.multiatlas('gamepad', 'assets/gamepad.json', 'assets');
     }
-    
+
     create() {
         // Setup player objects
-        this.player1 = this.mergedInput.addPlayer();
-        this.player2 = this.mergedInput.addPlayer();
+        this.player1 = this.mergedInput.addPlayer(0);
+        this.player2 = this.mergedInput.addPlayer(1);
 
         // Define keys (player, action, key, append)
 		this.mergedInput
@@ -97,9 +97,9 @@ export default class Demo extends Phaser.Scene {
             color: '#00ff00'
         });
     }
-        
+
     update() {
-        
+
         // Loop through player object
         for (let thisPlayer of this.mergedInput.players) {
 
@@ -133,24 +133,24 @@ export default class Demo extends Phaser.Scene {
         }
 
         this.player1Text.setText([
-            'Player 1', 'Gamepad: ' + (typeof this.mergedInput.getPlayer(0).gamepad.index === 'undefined' ? 'Press a button to connect' : this.mergedInput.getPlayer(0).gamepad.id), 
-            'Directions: ' + JSON.stringify(this.mergedInput.getPlayer(0).direction), 
-            'Buttons: ' + JSON.stringify(this.mergedInput.getPlayer(0).buttons), 
+            'Player 1', 'Gamepad: ' + (typeof this.mergedInput.getPlayer(0).gamepad.index === 'undefined' ? 'Press a button to connect' : this.mergedInput.getPlayer(0).gamepad.id),
+            'Directions: ' + JSON.stringify(this.mergedInput.getPlayer(0).direction),
+            'Buttons: ' + JSON.stringify(this.mergedInput.getPlayer(0).buttons),
             'Interaction: ' + JSON.stringify(this.mergedInput.getPlayer(0).interaction)
         ]);
         this.player2Text.setText([
-            'Player 2', 'Gamepad: ' + (typeof this.mergedInput.getPlayer(1).gamepad.index === 'undefined' ? 'Press a button to connect' : this.mergedInput.getPlayer(1).gamepad.id), 
-            'Directions: ' + JSON.stringify(this.mergedInput.getPlayer(1).direction), 
-            'Buttons: ' + JSON.stringify(this.mergedInput.getPlayer(1).buttons), 
+            'Player 2', 'Gamepad: ' + (typeof this.mergedInput.getPlayer(1).gamepad.index === 'undefined' ? 'Press a button to connect' : this.mergedInput.getPlayer(1).gamepad.id),
+            'Directions: ' + JSON.stringify(this.mergedInput.getPlayer(1).direction),
+            'Buttons: ' + JSON.stringify(this.mergedInput.getPlayer(1).buttons),
             'Interaction: ' + JSON.stringify(this.mergedInput.getPlayer(1).interaction)
         ]);
-        
+
         // this.player2Text.setText(JSON.stringify(this.mergedInput.debug().players, null, "\t"));
-        
+
     }
 
     tintButton(player, button){
         player.sprites[button].setTint('0xff0000');
     }
-    
+
 }
