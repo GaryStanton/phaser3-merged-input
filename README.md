@@ -69,6 +69,16 @@ Bearings and degrees have been added to direction objects.
 v1.2.0 - 2020-04-27
 You are now able to pass a player's X/Y position to a player object, whereupon the position of the mouse in relation to that player will be used to determine mouse bearings and degrees
 
+v1.2.1 - 2020-04-27
+Actually added the build files.
+
+v1.2.2 - 2020-05-03 
+Added secondary direction key detection, so that secondary directions may be instigated through a keypress as well as the right stick of a gamepad.
+Added timestamps to interactions making it possible to tell which was last used, e.g. keyboard vs mouse.
+
+v1.2.4 - 2020-05-08
+Added extra handling for 'null' gamepads.
+
 
 ## Credits
 Written by [Gary Stanton](https://garystanton.co.uk)  
