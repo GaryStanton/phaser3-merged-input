@@ -76,8 +76,11 @@ v1.2.2 - 2020-05-03
 Added secondary direction key detection, so that secondary directions may be instigated through a keypress as well as the right stick of a gamepad.
 Added timestamps to interactions making it possible to tell which was last used, e.g. keyboard vs mouse.
 
-v1.2.4 - 2020-05-08
+v1.2.3 - 2020-05-08
 Added extra handling for 'null' gamepads.
+
+v1.2.4 - 2020-05-08
+And again, remembering to include the built files would be a bonus.
 
 
 ## Credits

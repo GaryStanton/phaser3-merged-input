@@ -105,9 +105,9 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -181,6 +181,41 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
     }
 
     _createClass(MergedInput, [{
+        key: 'refreshGamepads',
+        value: function refreshGamepads() {
+            // Sometimes, gamepads are undefined. For some reason.
+            this.gamepads = this.systems.input.gamepad.gamepads.filter(function (el) {
+                return el != null;
+            });
+
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = this.gamepads.entries()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var _step$value = _slicedToArray(_step.value, 2),
+                        index = _step$value[0],
+                        thisGamepad = _step$value[1];
+
+                    thisGamepad.index = index; // Overwrite the gamepad index, in case we had undefined gamepads earlier
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+        }
+    }, {
         key: 'boot',
         value: function boot() {
             this.eventEmitter = this.systems.events;
@@ -189,34 +224,35 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
             // Gamepad
             if (typeof this.systems.input.gamepad !== 'undefined') {
                 this.systems.input.gamepad.once('connected', function (thisGamepad) {
+                    this.refreshGamepads();
                     this.setupGamepad(thisGamepad);
                 }, this);
-                this.gamepads = this.systems.input.gamepad.gamepads;
 
                 // Check to see if the gamepad has already been setup by the browser
                 this.systems.input.gamepad.refreshPads();
                 if (this.systems.input.gamepad.total) {
-                    var _iteratorNormalCompletion = true;
-                    var _didIteratorError = false;
-                    var _iteratorError = undefined;
+                    this.refreshGamepads();
+                    var _iteratorNormalCompletion2 = true;
+                    var _didIteratorError2 = false;
+                    var _iteratorError2 = undefined;
 
                     try {
-                        for (var _iterator = this.systems.input.gamepad.gamepads[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                            var thisGamepad = _step.value;
+                        for (var _iterator2 = this.gamepads[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                            var thisGamepad = _step2.value;
 
                             this.systems.input.gamepad.emit('connected', thisGamepad);
                         }
                     } catch (err) {
-                        _didIteratorError = true;
-                        _iteratorError = err;
+                        _didIteratorError2 = true;
+                        _iteratorError2 = err;
                     } finally {
                         try {
-                            if (!_iteratorNormalCompletion && _iterator.return) {
-                                _iterator.return();
+                            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                                _iterator2.return();
                             }
                         } finally {
-                            if (_didIteratorError) {
-                                throw _iteratorError;
+                            if (_didIteratorError2) {
+                                throw _iteratorError2;
                             }
                         }
                     }
@@ -262,13 +298,13 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
         key: 'update',
         value: function update() {
             // Loop through players and manage buffered input
-            var _iteratorNormalCompletion2 = true;
-            var _didIteratorError2 = false;
-            var _iteratorError2 = undefined;
+            var _iteratorNormalCompletion3 = true;
+            var _didIteratorError3 = false;
+            var _iteratorError3 = undefined;
 
             try {
-                for (var _iterator2 = this.players[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                    var thisPlayer = _step2.value;
+                for (var _iterator3 = this.players[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                    var thisPlayer = _step3.value;
 
                     if (thisPlayer.interaction.buffer == '') {
                         thisPlayer.interaction.pressed = '';
@@ -279,7 +315,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
                     // If the pointer hasn't moved, and the scene has changed, this can end up as undefined
                     thisPlayer.pointer.BEARING = typeof thisPlayer.pointer.BEARING != 'undefined' ? thisPlayer.pointer.BEARING : '';
-                    thisPlayer.pointer.BEARING_DEGREES = typeof thisPlayer.pointer.BEARING_DEGREES != 'undefined' ? thisPlayer.pointer.BEARING_DEGREES : '';
+                    thisPlayer.pointer.BEARING_DEGREES = typeof thisPlayer.pointer.BEARING_DEGREES != 'undefined' ? thisPlayer.pointer.BEARING_DEGREES : 0;
                     thisPlayer.pointer.ANGLE = typeof thisPlayer.pointer.ANGLE != 'undefined' ? thisPlayer.pointer.ANGLE : '';
 
                     thisPlayer.direction.BEARING = this.mapDirectionsToBearing(thisPlayer.direction);
@@ -292,16 +328,16 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                     thisPlayer.direction_secondary.DEGREES_LAST = thisPlayer.direction_secondary.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING_LAST)) : 0;
                 }
             } catch (err) {
-                _didIteratorError2 = true;
-                _iteratorError2 = err;
+                _didIteratorError3 = true;
+                _iteratorError3 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                        _iterator2.return();
+                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                        _iterator3.return();
                     }
                 } finally {
-                    if (_didIteratorError2) {
-                        throw _iteratorError2;
+                    if (_didIteratorError3) {
+                        throw _iteratorError3;
                     }
                 }
             }
@@ -329,7 +365,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
         /**
          * Add a new player object to the players array
-         * @param {number} index Player index - if a player object at this index already exists, it will be returned instead of creating a new player object
+        * @param {number} index Player index - if a player object at this index already exists, it will be returned instead of creating a new player object
          */
 
     }, {
@@ -357,55 +393,55 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
     }, {
         key: 'getPlayerIndexFromKey',
         value: function getPlayerIndexFromKey(key) {
-            var _iteratorNormalCompletion3 = true;
-            var _didIteratorError3 = false;
-            var _iteratorError3 = undefined;
+            var _iteratorNormalCompletion4 = true;
+            var _didIteratorError4 = false;
+            var _iteratorError4 = undefined;
 
             try {
-                for (var _iterator3 = this.players[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                    var thisPlayer = _step3.value;
+                for (var _iterator4 = this.players[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                    var thisPlayer = _step4.value;
 
                     // Loop through all the keys assigned to this player
                     for (var thisKey in thisPlayer.keys) {
-                        var _iteratorNormalCompletion4 = true;
-                        var _didIteratorError4 = false;
-                        var _iteratorError4 = undefined;
+                        var _iteratorNormalCompletion5 = true;
+                        var _didIteratorError5 = false;
+                        var _iteratorError5 = undefined;
 
                         try {
-                            for (var _iterator4 = thisPlayer.keys[thisKey][Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                                var thisValue = _step4.value;
+                            for (var _iterator5 = thisPlayer.keys[thisKey][Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                                var thisValue = _step5.value;
 
                                 if (thisValue == key) {
                                     return thisPlayer.index;
                                 }
                             }
                         } catch (err) {
-                            _didIteratorError4 = true;
-                            _iteratorError4 = err;
+                            _didIteratorError5 = true;
+                            _iteratorError5 = err;
                         } finally {
                             try {
-                                if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                                    _iterator4.return();
+                                if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                                    _iterator5.return();
                                 }
                             } finally {
-                                if (_didIteratorError4) {
-                                    throw _iteratorError4;
+                                if (_didIteratorError5) {
+                                    throw _iteratorError5;
                                 }
                             }
                         }
                     }
                 }
             } catch (err) {
-                _didIteratorError3 = true;
-                _iteratorError3 = err;
+                _didIteratorError4 = true;
+                _iteratorError4 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                        _iterator3.return();
+                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                        _iterator4.return();
                     }
                 } finally {
-                    if (_didIteratorError3) {
-                        throw _iteratorError3;
+                    if (_didIteratorError4) {
+                        throw _iteratorError4;
                     }
                 }
             }
@@ -432,7 +468,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                     'BEARING': '',
                     'BEARING_LAST': '',
                     'DEGREES': 0,
-                    'DEGREES_LAST': 0
+                    'DEGREES_LAST': 0,
+                    'TIMESTAMP': 0
                 },
                 'direction_secondary': {
                     'UP': 0,
@@ -442,7 +479,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                     'BEARING': '',
                     'DEGREES': 0,
                     'BEARING_LAST': '',
-                    'DEGREES_LAST': 0
+                    'DEGREES_LAST': 0,
+                    'TIMESTAMP': 0
                 },
                 'buttons': {},
                 'pointer': {
@@ -453,7 +491,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                     'M5': 0,
                     'BEARING': '',
                     'BEARING_DEGREES': 0,
-                    'ANGLE': 0
+                    'ANGLE': 0,
+                    'TIMESTAMP': 0
                 },
                 'position': {},
                 'interaction': {},
@@ -501,8 +540,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                 this.addPlayer();
             }
 
-            if (['UP', 'DOWN', 'LEFT', 'RIGHT', 'B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16'].includes(action)) {
-                if (append) {
+            if (['UP', 'DOWN', 'LEFT', 'RIGHT', 'ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT', 'B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16'].includes(action)) {
+                if (append && typeof this.players[player].keys[action] !== 'undefined') {
                     this.players[player].keys[action].push([value]);
                 } else {
                     this.players[player].keys[action] = [];
@@ -523,26 +562,26 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
         key: 'checkKeyboardInput',
         value: function checkKeyboardInput() {
             // Loop through players and check for keypresses - use of 'entries()' gives us an index to use for the player
-            var _iteratorNormalCompletion5 = true;
-            var _didIteratorError5 = false;
-            var _iteratorError5 = undefined;
+            var _iteratorNormalCompletion6 = true;
+            var _didIteratorError6 = false;
+            var _iteratorError6 = undefined;
 
             try {
-                for (var _iterator5 = this.players.entries()[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                    var _step5$value = _slicedToArray(_step5.value, 2),
-                        playerIndex = _step5$value[0],
-                        thisPlayer = _step5$value[1];
+                for (var _iterator6 = this.players.entries()[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                    var _step6$value = _slicedToArray(_step6.value, 2),
+                        playerIndex = _step6$value[0],
+                        thisPlayer = _step6$value[1];
 
                     // Loop through all the keys assigned to this player
                     for (var thisKey in thisPlayer.keys) {
                         var action = 0;
-                        var _iteratorNormalCompletion6 = true;
-                        var _didIteratorError6 = false;
-                        var _iteratorError6 = undefined;
+                        var _iteratorNormalCompletion7 = true;
+                        var _didIteratorError7 = false;
+                        var _iteratorError7 = undefined;
 
                         try {
-                            for (var _iterator6 = thisPlayer.keys[thisKey][Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-                                var thisValue = _step6.value;
+                            for (var _iterator7 = thisPlayer.keys[thisKey][Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+                                var thisValue = _step7.value;
 
                                 // Check if the key is down
                                 action = this.keys[thisValue].isDown ? 1 : action;
@@ -562,24 +601,33 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
                             // Set the action in the player object
                         } catch (err) {
-                            _didIteratorError6 = true;
-                            _iteratorError6 = err;
+                            _didIteratorError7 = true;
+                            _iteratorError7 = err;
                         } finally {
                             try {
-                                if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                                    _iterator6.return();
+                                if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                                    _iterator7.return();
                                 }
                             } finally {
-                                if (_didIteratorError6) {
-                                    throw _iteratorError6;
+                                if (_didIteratorError7) {
+                                    throw _iteratorError7;
                                 }
                             }
                         }
 
                         if (['UP', 'DOWN', 'LEFT', 'RIGHT'].includes(thisKey)) {
                             thisPlayer.direction[thisKey] = action;
+                            thisPlayer.direction.TIMESTAMP = this.scene.sys.time.now;
+                        } else if (['ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT'].includes(thisKey)) {
+                            thisPlayer.direction_secondary[thisKey.replace('ALT_', '')] = action;
+                            if (action == 1) {
+                                thisPlayer.direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+                            }
                         } else {
                             thisPlayer.buttons[thisKey] = action;
+                            if (action == 1) {
+                                thisPlayer.buttons.TIMESTAMP = this.scene.sys.time.now;
+                            }
                         }
 
                         // Set the latest interaction flag
@@ -589,16 +637,16 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                     }
                 }
             } catch (err) {
-                _didIteratorError5 = true;
-                _iteratorError5 = err;
+                _didIteratorError6 = true;
+                _iteratorError6 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                        _iterator5.return();
+                    if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                        _iterator6.return();
                     }
                 } finally {
-                    if (_didIteratorError5) {
-                        throw _iteratorError5;
+                    if (_didIteratorError6) {
+                        throw _iteratorError6;
                     }
                 }
             }
@@ -612,25 +660,25 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
         key: 'checkPointerInput',
         value: function checkPointerInput() {
             // Loop through players and check for button presses - use of 'entries()' gives us an index to use for the player
-            var _iteratorNormalCompletion7 = true;
-            var _didIteratorError7 = false;
-            var _iteratorError7 = undefined;
+            var _iteratorNormalCompletion8 = true;
+            var _didIteratorError8 = false;
+            var _iteratorError8 = undefined;
 
             try {
-                for (var _iterator7 = this.players.entries()[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-                    var _step7$value = _slicedToArray(_step7.value, 2),
-                        playerIndex = _step7$value[0],
-                        thisPlayer = _step7$value[1];
+                for (var _iterator8 = this.players.entries()[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+                    var _step8$value = _slicedToArray(_step8.value, 2),
+                        playerIndex = _step8$value[0],
+                        thisPlayer = _step8$value[1];
 
                     // Loop through all the keys assigned to this player
                     for (var thisKey in thisPlayer.keys) {
-                        var _iteratorNormalCompletion8 = true;
-                        var _didIteratorError8 = false;
-                        var _iteratorError8 = undefined;
+                        var _iteratorNormalCompletion9 = true;
+                        var _didIteratorError9 = false;
+                        var _iteratorError9 = undefined;
 
                         try {
-                            for (var _iterator8 = thisPlayer.keys[thisKey][Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-                                var thisValue = _step8.value;
+                            for (var _iterator9 = thisPlayer.keys[thisKey][Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+                                var thisValue = _step9.value;
                                 // Each definition for this key action
                                 if (['M1', 'M2', 'M3', 'M4', 'M5'].includes(thisValue[0])) {
                                     // Check to see if button is pressed (stored in P1, can't have two mice...)
@@ -640,32 +688,32 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                                 }
                             }
                         } catch (err) {
-                            _didIteratorError8 = true;
-                            _iteratorError8 = err;
+                            _didIteratorError9 = true;
+                            _iteratorError9 = err;
                         } finally {
                             try {
-                                if (!_iteratorNormalCompletion8 && _iterator8.return) {
-                                    _iterator8.return();
+                                if (!_iteratorNormalCompletion9 && _iterator9.return) {
+                                    _iterator9.return();
                                 }
                             } finally {
-                                if (_didIteratorError8) {
-                                    throw _iteratorError8;
+                                if (_didIteratorError9) {
+                                    throw _iteratorError9;
                                 }
                             }
                         }
                     }
                 }
             } catch (err) {
-                _didIteratorError7 = true;
-                _iteratorError7 = err;
+                _didIteratorError8 = true;
+                _iteratorError8 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion7 && _iterator7.return) {
-                        _iterator7.return();
+                    if (!_iteratorNormalCompletion8 && _iterator8.return) {
+                        _iterator8.return();
                     }
                 } finally {
-                    if (_didIteratorError7) {
-                        throw _iteratorError7;
+                    if (_didIteratorError8) {
+                        throw _iteratorError8;
                     }
                 }
             }
@@ -705,10 +753,12 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
             // Last button pressed
             if (![12, 13, 14, 15].includes(index)) {
                 // Update the last button state
-
                 this.players[button.pad.index].interaction.pressed = 'B' + index;
                 this.players[button.pad.index].interaction.last = 'B' + index;
                 this.players[button.pad.index].interaction.buffer = 'B' + index;
+                this.players[button.pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
+            } else {
+                this.players[button.pad.index].direction.TIMESTAMP = this.scene.sys.time.now;
             }
         }
 
@@ -738,6 +788,13 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
             if (index === 15) {
                 this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: button.pad.index, action: 'RIGHT', state: 'UP' });
             }
+
+            if (![12, 13, 14, 15].includes(index)) {
+                // Update the last button state
+                this.players[button.pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
+            } else {
+                this.players[button.pad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+            }
         }
 
         /**
@@ -748,20 +805,21 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
         key: 'checkGamepadInput',
         value: function checkGamepadInput() {
             // Check for gamepad input
-            var _iteratorNormalCompletion9 = true;
-            var _didIteratorError9 = false;
-            var _iteratorError9 = undefined;
+            var _iteratorNormalCompletion10 = true;
+            var _didIteratorError10 = false;
+            var _iteratorError10 = undefined;
 
             try {
-                for (var _iterator9 = this.gamepads[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-                    var thisGamepad = _step9.value;
-
+                for (var _iterator10 = this.gamepads[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+                    var thisGamepad = _step10.value;
 
                     // Directions
                     if (thisGamepad.leftStick.y < -0.5) {
                         this.players[thisGamepad.index].direction.UP = Math.abs(thisGamepad.leftStick.y);
+                        this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
                     } else if (thisGamepad.leftStick.y > 0.5) {
                         this.players[thisGamepad.index].direction.DOWN = thisGamepad.leftStick.y;
+                        this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
                     } else if (this.players[thisGamepad.index].interaction.device === 'gamepad') {
                         // DPad
                         this.players[thisGamepad.index].direction.UP = thisGamepad.up ? 1 : 0;
@@ -770,8 +828,10 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
                     if (thisGamepad.leftStick.x < -0.5) {
                         this.players[thisGamepad.index].direction.LEFT = Math.abs(thisGamepad.leftStick.x);
+                        this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
                     } else if (thisGamepad.leftStick.x > 0.5) {
                         this.players[thisGamepad.index].direction.RIGHT = thisGamepad.leftStick.x;
+                        this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
                     } else if (this.players[thisGamepad.index].interaction.device === 'gamepad') {
                         // DPad
                         this.players[thisGamepad.index].direction.LEFT = thisGamepad.left ? 1 : 0;
@@ -781,8 +841,10 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                     // Secondary
                     if (thisGamepad.rightStick.y < -0.5) {
                         this.players[thisGamepad.index].direction_secondary.UP = Math.abs(thisGamepad.rightStick.y);
+                        this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
                     } else if (thisGamepad.rightStick.y > 0.5) {
                         this.players[thisGamepad.index].direction_secondary.DOWN = thisGamepad.rightStick.y;
+                        this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
                     } else {
                         this.players[thisGamepad.index].direction_secondary.UP = 0;
                         this.players[thisGamepad.index].direction_secondary.DOWN = 0;
@@ -790,8 +852,10 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
                     if (thisGamepad.rightStick.x < -0.5) {
                         this.players[thisGamepad.index].direction_secondary.LEFT = Math.abs(thisGamepad.rightStick.x);
+                        this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
                     } else if (thisGamepad.rightStick.x > 0.5) {
                         this.players[thisGamepad.index].direction_secondary.RIGHT = thisGamepad.rightStick.x;
+                        this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
                     } else {
                         this.players[thisGamepad.index].direction_secondary.LEFT = 0;
                         this.players[thisGamepad.index].direction_secondary.RIGHT = 0;
@@ -806,16 +870,16 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                     }
                 }
             } catch (err) {
-                _didIteratorError9 = true;
-                _iteratorError9 = err;
+                _didIteratorError10 = true;
+                _iteratorError10 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion9 && _iterator9.return) {
-                        _iterator9.return();
+                    if (!_iteratorNormalCompletion10 && _iterator10.return) {
+                        _iterator10.return();
                     }
                 } finally {
-                    if (_didIteratorError9) {
-                        throw _iteratorError9;
+                    if (_didIteratorError10) {
+                        throw _iteratorError10;
                     }
                 }
             }
@@ -839,11 +903,12 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                     var position = this.players[0].position;
                     var angleToPointer = Phaser.Math.Angle.Between(position.x, position.y, pointer.worldX, pointer.worldY);
                     var _pointerDirection = this.getBearingFromAngle(angleToPointer, 8);
-                    var pointerAngle = this.mapBearingToDegrees(_pointerDirection);
+                    var pointerAngle = Number(this.mapBearingToDegrees(_pointerDirection));
 
                     this.players[0].pointer.BEARING = _pointerDirection;
                     this.players[0].pointer.ANGLE = angleToPointer;
                     this.players[0].pointer.BEARING_DEGREES = pointerAngle;
+                    this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
                 }
             }
         }
@@ -882,6 +947,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
             this.players[0].interaction.pressed = action;
             this.players[0].interaction.last = action;
             this.players[0].interaction.buffer = action;
+            this.players[0].pointer.TIMESTAMP = pointer.moveTime;
         }
 
         /**
@@ -912,6 +978,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
             this.eventEmitter.emit('mergedInput', { device: 'pointer', value: 1, player: 0, action: action, state: 'UP' });
 
             this.players[0].pointer[action] = 0;
+            this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
         }
 
         /**
@@ -1063,13 +1130,13 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
             }
 
             debug.players = [];
-            var _iteratorNormalCompletion10 = true;
-            var _didIteratorError10 = false;
-            var _iteratorError10 = undefined;
+            var _iteratorNormalCompletion11 = true;
+            var _didIteratorError11 = false;
+            var _iteratorError11 = undefined;
 
             try {
-                for (var _iterator10 = this.players[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-                    var thisPlayer = _step10.value;
+                for (var _iterator11 = this.players[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+                    var thisPlayer = _step11.value;
 
                     debug.players.push({
                         'interaction': thisPlayer.interaction,
@@ -1082,16 +1149,16 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
                     });
                 }
             } catch (err) {
-                _didIteratorError10 = true;
-                _iteratorError10 = err;
+                _didIteratorError11 = true;
+                _iteratorError11 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion10 && _iterator10.return) {
-                        _iterator10.return();
+                    if (!_iteratorNormalCompletion11 && _iterator11.return) {
+                        _iterator11.return();
                     }
                 } finally {
-                    if (_didIteratorError10) {
-                        throw _iteratorError10;
+                    if (_didIteratorError11) {
+                        throw _iteratorError11;
                     }
                 }
             }

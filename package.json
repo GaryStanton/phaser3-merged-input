@@ -1,6 +1,6 @@
 {
   "name": "phaser3-merged-input",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "A Phaser 3 plugin to handle input from keyboard, gamepad & mouse, allowing for easy key definition and multiplayer input",
   "main": "src/main.js",
   "scripts": {
