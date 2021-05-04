@@ -88,6 +88,9 @@ It seems the per pad listeners weren't firing for pad 2 and this method works ar
 Also added an addPlayer call if the corresponding player is missing.
 Updated phaser dependancy
 
+v1.2.6 - 2021-05-04
+Guess who forgot to build again??
+
 
 ## Credits
 Written by [Gary Stanton](https://garystanton.co.uk)  
