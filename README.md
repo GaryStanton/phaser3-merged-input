@@ -82,6 +82,12 @@ Added extra handling for 'null' gamepads.
 v1.2.4 - 2020-05-08
 And again, remembering to include the built files would be a bonus.
 
+v1.2.5 - 2021-05-04
+Updated buttondown and buttonup event listeners from per pad, to per input system.
+It seems the per pad listeners weren't firing for pad 2 and this method works around the problem.
+Also added an addPlayer call if the corresponding player is missing.
+Updated phaser dependancy
+
 
 ## Credits
 Written by [Gary Stanton](https://garystanton.co.uk)  
