@@ -127,11 +127,11 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	update() {
 		// Loop through players and manage buffered input
 		for (let thisPlayer of this.players) {
-			if (thisPlayer.interaction.buffer == '') {
-				thisPlayer.interaction.pressed = '';
-			}
 			if (thisPlayer.interaction.pressed != '') {
 				thisPlayer.interaction.buffer = '';
+			}
+			if (thisPlayer.interaction.buffer == '') {
+				thisPlayer.interaction.pressed = '';
 			}
 
 			// If the pointer hasn't moved, and the scene has changed, this can end up as undefined

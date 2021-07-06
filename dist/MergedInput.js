@@ -309,11 +309,11 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				for (var _iterator3 = this.players[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
 					var thisPlayer = _step3.value;
 
-					if (thisPlayer.interaction.buffer == '') {
-						thisPlayer.interaction.pressed = '';
-					}
 					if (thisPlayer.interaction.pressed != '') {
 						thisPlayer.interaction.buffer = '';
+					}
+					if (thisPlayer.interaction.buffer == '') {
+						thisPlayer.interaction.pressed = '';
 					}
 
 					// If the pointer hasn't moved, and the scene has changed, this can end up as undefined

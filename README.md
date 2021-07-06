@@ -91,6 +91,9 @@ Updated phaser dependancy
 v1.2.6 - 2021-05-04
 Guess who forgot to build again??
 
+v1.2.7 - 2021-07-06
+Changed the order of buffer/pressed checking in update loop.
+
 
 ## Credits
 Written by [Gary Stanton](https://garystanton.co.uk)  
