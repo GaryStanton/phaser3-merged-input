@@ -392,15 +392,27 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		// DPad mapping
 		if (button.index === 12) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'UP', state: 'DOWN' });
+			this.players[pad.index].interaction.pressed = 'UP';
+			this.players[pad.index].interaction.last = 'UP';
+			this.players[pad.index].interaction.buffer = 'UP';
 		}
 		if (button.index === 13) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'DOWN', state: 'DOWN' });
+			this.players[pad.index].interaction.pressed = 'DOWN';
+			this.players[pad.index].interaction.last = 'DOWN';
+			this.players[pad.index].interaction.buffer = 'DOWN';
 		}
 		if (button.index === 14) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'LEFT', state: 'DOWN' });
+			this.players[pad.index].interaction.pressed = 'LEFT';
+			this.players[pad.index].interaction.last = 'LEFT';
+			this.players[pad.index].interaction.buffer = 'LEFT';
 		}
 		if (button.index === 15) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'RIGHT', state: 'DOWN' });
+			this.players[pad.index].interaction.pressed = 'RIGHT';
+			this.players[pad.index].interaction.last = 'RIGHT';
+			this.players[pad.index].interaction.buffer = 'RIGHT';
 		}
 
 		// Last button pressed
