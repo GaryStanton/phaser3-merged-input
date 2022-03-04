@@ -200,7 +200,12 @@ declare module 'phaser3-merged-input' {
         TIMESTAMP: number;
       };
       position: {};
-      interaction: {};
+      'interaction': {
+        buffer: string;
+        device: string;
+        last: string;
+        pressed: string;
+      };
       gamepad: {};
       keys: {
         UP: any[];
