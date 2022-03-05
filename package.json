@@ -8,6 +8,7 @@
     "demo": "webpack --config webpack.demo.config.js",
     "dev": "webpack --config webpack.demo.config.js"
   },
+  "types": "main.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/garystanton/phaser3-merged-input.git"
