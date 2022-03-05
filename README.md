@@ -15,6 +15,37 @@ Each player object contains direction and button actions. These are updated by t
 . Check for gamepad button presses (i.e. ‘justDown()’ functionality for gamepads)  
 . Check the last device type used for interaction.  
 
+## Installation
+
+```
+npm install phaser3-merged-input
+```
+
+Then add the plugin to Phaser 3's configuration:
+
+```javascript
+const config = {
+  plugins: {
+    scene: [
+      {
+        key: "mergedInput",
+        plugin: MergedInput,
+        mapping: "mergedInput",
+      },
+    ],
+  }
+};
+```
+
+### TypeScript
+
+You will also need to add a class member to the scene so TypeScript knows how to type it. The member name **must** have the same name as the value the `mapping` property specified in the Phaser configuration above, or the plugin won't work. **Example**:
+
+```typescript
+class InputController extends Phaser.Scene {
+  private mergedInput?: MergedInput;
+```
+
 ## Setup
 Set up a player object for each player in your game with `addPlayer()`.
 Then assign keys to each action with the `defineKey()` function, e.g.
