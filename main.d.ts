@@ -1,6 +1,7 @@
 declare module 'phaser3-merged-input' {
   import * as Phaser from "phaser";
 
+  export type KeyCode = keyof typeof Phaser.Input.Keyboard.KeyCodes;
   export type Bearing = "" | "W" | "NW" | "N" | "NE" | "E" | "SE" | "S" | "SW";
   export interface Player {
     direction: {
@@ -221,7 +222,7 @@ declare module 'phaser3-merged-input' {
      * @param {string} value The key to use
      * @param {boolean} append When true, this key definition will be appended to the existing key(s) for this action
      */
-    defineKey(player: number, action: string, value: string, append?: boolean): MergedInput;
+    defineKey(player: number, action: string, value: KeyCode, append?: boolean): MergedInput;
     /**
      * Iterate through players and check for interaction with defined keys
      */
