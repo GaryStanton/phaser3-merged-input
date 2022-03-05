@@ -21,30 +21,45 @@ Each player object contains direction and button actions. These are updated by t
 npm install phaser3-merged-input
 ```
 
-Then add the plugin to Phaser 3's configuration:
+Then you can add the plugin to Phaser 3's global configuration:
 
 ```javascript
 const config = {
-  plugins: {
-    scene: [
-      {
-        key: "mergedInput",
-        plugin: MergedInput,
-        mapping: "mergedInput",
-      },
-    ],
-  }
+    plugins: {
+        scene: [
+            {
+                key: "mergedInput",
+                plugin: MergedInput,
+                mapping: "mergedInput",
+            },
+        ],
+    }
 };
+```
+
+Or using a scene's local configuration:
+
+```javascript
+class InputController extends Phaser.Scene {
+    preload() {
+        this.load.scenePlugin('mergedInput', MergedInput);
+    }
 ```
 
 ### TypeScript
 
-You will also need to add a class member to the scene so TypeScript knows how to type it. The member name **must** have the same name as the value the `mapping` property specified in the Phaser configuration above, or the plugin won't work. **Example**:
+You will also need to add a class member to the scene so TypeScript knows how to type it.
+
+**Example**:
 
 ```typescript
 class InputController extends Phaser.Scene {
-  private mergedInput?: MergedInput;
+    private mergedInput?: MergedInput;
 ```
+
+If you're using the Phaser global config for the plugin, the member name **must** have the same name as the value the `mapping` property specified in the Phaser configuration above, or the plugin won't work.
+
+If you're using the scene local plugin, the member name **must** match the key specified in `scenePlugin(key, ...)`.
 
 ## Setup
 Set up a player object for each player in your game with `addPlayer()`.
