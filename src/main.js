@@ -69,7 +69,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 	boot() {
 		this.eventEmitter = this.systems.events;
-		this.eventEmitter.on('update', this.update, this);
+		this.eventEmitter.on('preupdate', this.preupdate, this);
+		this.eventEmitter.on('postupdate', this.postupdate, this);
 
 		// Gamepad
 		if (typeof this.systems.input.gamepad !== 'undefined') {
@@ -92,20 +93,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		}
 
 		// Keyboard
-		this.systems.input.keyboard.on('keydown', function (event) {
-			let keyCode = Object.keys(Phaser.Input.Keyboard.KeyCodes).find(key => Phaser.Input.Keyboard.KeyCodes[key] === event.keyCode);
-			let playerIndex = this.getPlayerIndexFromKey(keyCode);
-			if (playerIndex > -1) {
-				this.getPlayer(playerIndex).interaction.device = 'keyboard';
-			}
-		}, this);
-		this.systems.input.keyboard.on('keyup', function () {
-			let keyCode = Object.keys(Phaser.Input.Keyboard.KeyCodes).find(key => Phaser.Input.Keyboard.KeyCodes[key] === event.keyCode);
-			let playerIndex = this.getPlayerIndexFromKey(keyCode);
-			if (playerIndex > -1) {
-				this.getPlayer(playerIndex).interaction.device = 'keyboard';
-			}
-		}, this);
+		this.systems.input.keyboard.on('keydown', this.keyboardKeyDown, this);
+		this.systems.input.keyboard.on('keyup', this.keyboardKeyUp, this);
 
 
 		// Pointer
@@ -124,18 +113,9 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		}, this);
 	}
 
-	update() {
-		// Loop through players and manage buffered input
+	preupdate() {
+		// Loop through players and handle input
 		for (let thisPlayer of this.players) {
-
-			// Clear the interaction buffer
-			if (thisPlayer.interaction.clearBuffer) {
-				this.clearBuffer(thisPlayer);
-			}
-			else {
-				thisPlayer.interaction.clearBuffer = true;
-			}
-
 			// If the pointer hasn't moved, and the scene has changed, this can end up as undefined
 			thisPlayer.pointer.BEARING = typeof thisPlayer.pointer.BEARING != 'undefined' ? thisPlayer.pointer.BEARING : '';
 			thisPlayer.pointer.BEARING_DEGREES = typeof thisPlayer.pointer.BEARING_DEGREES != 'undefined' ? thisPlayer.pointer.BEARING_DEGREES : 0;
@@ -156,6 +136,15 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		this.checkGamepadInput();
 		this.checkPointerInput();
 	}
+
+	postupdate() {
+		// Loop through players and manage buffered input
+		for (let thisPlayer of this.players) {
+			// Clear the interaction buffer
+			this.clearBuffer(thisPlayer);
+		}
+	}
+
 
 	/**
 	 * Clear the interaction buffer for the given player
@@ -220,6 +209,20 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		return -1;
 	}
 
+	getPlayerButtonFromKey(key) {
+		for (let thisPlayer of this.players) {
+			// Loop through all the keys assigned to this player
+			for (var thisKey in thisPlayer.keys) {
+				for (var thisValue of thisPlayer.keys[thisKey]) {
+					if (thisValue == key) {
+						return thisKey;
+					}
+				}
+			}
+		}
+		return '';
+	}
+
 	/**
 	 * Returns a struct to hold input control information
 	 * Set up a struct for each player in the game
@@ -278,10 +281,11 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		}
 
 		controls.interaction.buffer = '';
-		controls.interaction.clearBuffer = true;
 		controls.interaction.pressed = '';
 		controls.interaction.released = '';
 		controls.interaction.last = '';
+		controls.interaction.lastPressed = '';
+		controls.interaction.lastReleased = '';
 		controls.interaction.device = '';
 
 		return controls;
@@ -329,20 +333,6 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 				for (var thisValue of thisPlayer.keys[thisKey]) {
 					// Check if the key is down
 					action = (this.keys[thisValue].isDown) ? 1 : action;
-
-					// Emit events based on the key down and up values
-					if (Phaser.Input.Keyboard.JustDown(this.keys[thisValue])) {
-						this.eventEmitter.emit('mergedInput', { device: 'keyboard', value: 1, player: playerIndex, action: thisKey, state: 'DOWN' });
-						// Update the last button state
-						thisPlayer.interaction.pressed = thisKey;
-						thisPlayer.interaction.buffer = thisKey;
-						thisPlayer.interaction.last = thisKey;
-
-					}
-					if (Phaser.Input.Keyboard.JustUp(this.keys[thisValue])) {
-						this.eventEmitter.emit('mergedInput', { device: 'keyboard', value: 1, player: playerIndex, action: thisKey, state: 'UP' });
-						thisPlayer.interaction.released = thisKey;
-					}
 				}
 
 				// Set the action in the player object
@@ -371,6 +361,45 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		}
 	}
 
+	/**
+	 * When a keyboard button is pressed down, this function will emit a mergedInput event in the global registry.
+	 * The event contains a reference to the player assigned to the key, and passes a mapped action and value
+	 */
+	keyboardKeyDown(event) {
+		let keyCode = Object.keys(Phaser.Input.Keyboard.KeyCodes).find(key => Phaser.Input.Keyboard.KeyCodes[key] === event.keyCode);
+		let playerIndex = this.getPlayerIndexFromKey(keyCode);
+		let playerAction = this.getPlayerButtonFromKey(keyCode);
+
+		if (playerIndex > -1 && playerAction != '') {
+			let thisPlayer = this.getPlayer(playerIndex);
+			this.eventEmitter.emit('mergedInput', { device: 'keyboard', value: 1, player: playerIndex, action: keyCode, state: 'DOWN' });
+
+			thisPlayer.interaction.device = 'keyboard';
+			thisPlayer.interaction.pressed = playerAction;
+			thisPlayer.interaction.buffer = playerAction;
+			thisPlayer.interaction.last = playerAction;
+			thisPlayer.interaction.lastPressed = playerAction;
+		}
+	}
+
+	/**
+	 * When a keyboard button is released, this function will emit a mergedInput event in the global registry.
+	 * The event contains a reference to the player assigned to the key, and passes a mapped action and value
+	 */
+	keyboardKeyUp(event) {
+		let keyCode = Object.keys(Phaser.Input.Keyboard.KeyCodes).find(key => Phaser.Input.Keyboard.KeyCodes[key] === event.keyCode);
+		let playerIndex = this.getPlayerIndexFromKey(keyCode);
+		let playerAction = this.getPlayerButtonFromKey(keyCode);
+
+		if (playerIndex > -1 && playerAction != '') {
+			let thisPlayer = this.getPlayer(playerIndex);
+			this.eventEmitter.emit('mergedInput', { device: 'keyboard', value: 1, player: playerIndex, action: keyCode, state: 'DOWN' });
+
+			thisPlayer.interaction.device = 'keyboard';
+			thisPlayer.interaction.released = playerAction;
+			thisPlayer.interaction.lastReleased = playerAction;
+		}
+	}
 
 
 	/**
@@ -405,7 +434,6 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 */
 	gamepadButtonDown(pad, button, value) {
 		this.players[pad.index].interaction.device = 'gamepad';
-		this.players[pad.index].interaction.clearBuffer = false;
 
 		this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: value, player: pad.index, action: 'B' + button.index, state: 'DOWN' });
 
@@ -414,24 +442,28 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'UP', state: 'DOWN' });
 			this.players[pad.index].interaction.pressed = 'UP';
 			this.players[pad.index].interaction.last = 'UP';
+			this.players[pad.index].interaction.lastPressed = 'UP';
 			this.players[pad.index].interaction.buffer = 'UP';
 		}
 		if (button.index === 13) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'DOWN', state: 'DOWN' });
 			this.players[pad.index].interaction.pressed = 'DOWN';
 			this.players[pad.index].interaction.last = 'DOWN';
+			this.players[pad.index].interaction.lastPressed = 'DOWN';
 			this.players[pad.index].interaction.buffer = 'DOWN';
 		}
 		if (button.index === 14) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'LEFT', state: 'DOWN' });
 			this.players[pad.index].interaction.pressed = 'LEFT';
 			this.players[pad.index].interaction.last = 'LEFT';
+			this.players[pad.index].interaction.lastPressed = 'LEFT';
 			this.players[pad.index].interaction.buffer = 'LEFT';
 		}
 		if (button.index === 15) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'RIGHT', state: 'DOWN' });
 			this.players[pad.index].interaction.pressed = 'RIGHT';
 			this.players[pad.index].interaction.last = 'RIGHT';
+			this.players[pad.index].interaction.lastPressed = 'RIGHT';
 			this.players[pad.index].interaction.buffer = 'RIGHT';
 		}
 
@@ -440,6 +472,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			// Update the last button state
 			this.players[pad.index].interaction.pressed = 'B' + button.index;
 			this.players[pad.index].interaction.last = 'B' + button.index;
+			this.players[pad.index].interaction.lastPressed = 'B' + button.index;
 			this.players[pad.index].interaction.buffer = 'B' + button.index;
 			this.players[pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
 		}
@@ -457,30 +490,34 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 */
 	gamepadButtonUp(pad, button, value) {
 		this.players[pad.index].interaction.device = 'gamepad';
-		this.players[pad.index].interaction.clearBuffer = false;
 
 		this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: value, player: pad.index, action: 'B' + button.index, state: 'UP' });
 		// DPad mapping
 		if (button.index === 12) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'UP', state: 'UP' });
 			this.players[pad.index].interaction.released = 'UP';
+			this.players[pad.index].interaction.lastReleased = 'UP';
 		}
 		if (button.index === 13) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'DOWN', state: 'UP' });
 			this.players[pad.index].interaction.released = 'DOWN';
+			this.players[pad.index].interaction.lastReleased = 'DOWN';
 		}
 		if (button.index === 14) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'LEFT', state: 'UP' });
 			this.players[pad.index].interaction.released = 'LEFT';
+			this.players[pad.index].interaction.lastReleased = 'LEFT';
 		}
 		if (button.index === 15) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'RIGHT', state: 'UP' });
 			this.players[pad.index].interaction.released = 'RIGHT';
+			this.players[pad.index].interaction.lastReleased = 'RIGHT';
 		}
 
 		if (![12, 13, 14, 15].includes(button.index)) {
 			// Update the last button state
 			this.players[pad.index].interaction.released = 'B' + button.index;
+			this.players[pad.index].interaction.lastReleased = 'B' + button.index;
 			this.players[pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
 		}
 		else {
@@ -624,10 +661,9 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		// Update the last button state
 		this.players[0].interaction.pressed = action;
 		this.players[0].interaction.last = action;
+		this.players[0].interaction.lastPressed = action;
 		this.players[0].interaction.buffer = action;
 		this.players[0].pointer.TIMESTAMP = pointer.moveTime;
-
-		this.players[0].interaction.clearBuffer = false;
 	}
 
 
@@ -657,8 +693,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 		this.players[0].pointer[action] = 0;
 		this.players[0].interaction.released = action;
+		this.players[0].interaction.lastReleased = action;
 		this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
-		this.players[0].interaction.clearBuffer = false;
 	}
 
 
