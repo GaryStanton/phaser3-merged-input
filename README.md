@@ -109,6 +109,9 @@ Install with `npm install`, then use `npm run dev` to spin up a development serv
 ## Build plugin
 Build the plugin including minified version. Targets the dist folder.
 `npm run build`
+  
+---
+
 
 ## Changelog
 v1.1.0 - 2020-04-19
@@ -143,11 +146,17 @@ Guess who forgot to build again??
 v1.2.7 - 2021-07-06
 Changed the order of buffer/pressed checking in update loop.
 
+v1.2.8 - 2021-07-23
+Added gamepad directions to interaction buffer/presses to match keyboard interactions.
+
+
+
 
 ## Credits
 Written by [Gary Stanton](https://garystanton.co.uk)  
 Built from the [Plugin Starter Kit](https://github.com/nkholski/phaser-plugin-starter) by Niklas Berg  
 Demo sprites by [Nicolae Berbece](https://opengameart.org/content/free-keyboard-and-controllers-prompts-pack)  
+With thanks for contributions by @zewa666 and @bbugh
 
 ---
 

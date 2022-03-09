@@ -132,6 +132,14 @@ export default class Demo extends Phaser.Scene {
             }
         }
 
+        if (this.mergedInput.getPlayer(0).interaction.pressed) {
+            console.log(JSON.stringify(this.mergedInput.getPlayer(0).interaction))
+        }
+
+        if (this.mergedInput.getPlayer(0).interaction.released) {
+            console.log(JSON.stringify(this.mergedInput.getPlayer(0).interaction))
+        }
+
         this.player1Text.setText([
             'Player 1', 'Gamepad: ' + (typeof this.mergedInput.getPlayer(0).gamepad.index === 'undefined' ? 'Press a button to connect' : this.mergedInput.getPlayer(0).gamepad.id),
             'Directions: ' + JSON.stringify(this.mergedInput.getPlayer(0).direction),
