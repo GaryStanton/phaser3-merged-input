@@ -127,13 +127,11 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	update() {
 		// Loop through players and manage buffered input
 		for (let thisPlayer of this.players) {
-
-			// Clear the interaction buffer
-			if (thisPlayer.interaction.clearBuffer) {
-				this.clearBuffer(thisPlayer);
+			if (thisPlayer.interaction.pressed != '') {
+				thisPlayer.interaction.buffer = '';
 			}
-			else {
-				thisPlayer.interaction.clearBuffer = true;
+			if (thisPlayer.interaction.buffer == '') {
+				thisPlayer.interaction.pressed = '';
 			}
 
 			// If the pointer hasn't moved, and the scene has changed, this can end up as undefined
@@ -155,20 +153,6 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		this.checkKeyboardInput();
 		this.checkGamepadInput();
 		this.checkPointerInput();
-	}
-
-	/**
-	 * Clear the interaction buffer for the given player
-	 * @param {*} thisPlayer 
-	 */
-	clearBuffer(thisPlayer) {
-		if (thisPlayer.interaction.pressed != '') {
-			thisPlayer.interaction.buffer = '';
-		}
-		if (thisPlayer.interaction.buffer == '') {
-			thisPlayer.interaction.pressed = '';
-			thisPlayer.interaction.released = '';
-		}
 	}
 
 	/**
@@ -278,9 +262,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		}
 
 		controls.interaction.buffer = '';
-		controls.interaction.clearBuffer = true;
 		controls.interaction.pressed = '';
-		controls.interaction.released = '';
 		controls.interaction.last = '';
 		controls.interaction.device = '';
 
@@ -341,7 +323,6 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 					}
 					if (Phaser.Input.Keyboard.JustUp(this.keys[thisValue])) {
 						this.eventEmitter.emit('mergedInput', { device: 'keyboard', value: 1, player: playerIndex, action: thisKey, state: 'UP' });
-						thisPlayer.interaction.released = thisKey;
 					}
 				}
 
@@ -405,7 +386,6 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 */
 	gamepadButtonDown(pad, button, value) {
 		this.players[pad.index].interaction.device = 'gamepad';
-		this.players[pad.index].interaction.clearBuffer = false;
 
 		this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: value, player: pad.index, action: 'B' + button.index, state: 'DOWN' });
 
@@ -457,30 +437,23 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 */
 	gamepadButtonUp(pad, button, value) {
 		this.players[pad.index].interaction.device = 'gamepad';
-		this.players[pad.index].interaction.clearBuffer = false;
-
 		this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: value, player: pad.index, action: 'B' + button.index, state: 'UP' });
 		// DPad mapping
 		if (button.index === 12) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'UP', state: 'UP' });
-			this.players[pad.index].interaction.released = 'UP';
 		}
 		if (button.index === 13) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'DOWN', state: 'UP' });
-			this.players[pad.index].interaction.released = 'DOWN';
 		}
 		if (button.index === 14) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'LEFT', state: 'UP' });
-			this.players[pad.index].interaction.released = 'LEFT';
 		}
 		if (button.index === 15) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'RIGHT', state: 'UP' });
-			this.players[pad.index].interaction.released = 'RIGHT';
 		}
 
 		if (![12, 13, 14, 15].includes(button.index)) {
 			// Update the last button state
-			this.players[pad.index].interaction.released = 'B' + button.index;
 			this.players[pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
 		}
 		else {
@@ -626,8 +599,6 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		this.players[0].interaction.last = action;
 		this.players[0].interaction.buffer = action;
 		this.players[0].pointer.TIMESTAMP = pointer.moveTime;
-
-		this.players[0].interaction.clearBuffer = false;
 	}
 
 
@@ -656,9 +627,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		this.eventEmitter.emit('mergedInput', { device: 'pointer', value: 1, player: 0, action: action, state: 'UP' });
 
 		this.players[0].pointer[action] = 0;
-		this.players[0].interaction.released = action;
 		this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
-		this.players[0].interaction.clearBuffer = false;
 	}
 
 
