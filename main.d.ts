@@ -63,8 +63,10 @@ declare module 'phaser3-merged-input' {
     'interaction': {
       buffer: string;
       device: string;
-      last: string;
       pressed: string;
+	  released: string;
+	  lastPressed: string;
+	  lastReleased: string;
     };
     'gamepad': {};
     'keys': {
@@ -143,7 +145,8 @@ declare module 'phaser3-merged-input' {
     refreshGamepads(): void;
     boot(): void;
     eventEmitter: any;
-    update(): void;
+    preupdate(): void;
+    postupdate(): void;
     /**
      * Set up the gamepad and associate with a player object
      */
@@ -159,6 +162,7 @@ declare module 'phaser3-merged-input' {
      */
     getPlayer(index: number): any;
     getPlayerIndexFromKey(key: any): any;
+	getPlayerButtonFromKey(key): any;
     /**
      * Returns a struct to hold input control information
      * Set up a struct for each player in the game
@@ -204,8 +208,10 @@ declare module 'phaser3-merged-input' {
       'interaction': {
         buffer: string;
         device: string;
-        last: string;
         pressed: string;
+		released: string;
+		lastPressed: string;
+		lastReleased: string;
       };
       gamepad: {};
       keys: {
@@ -227,6 +233,16 @@ declare module 'phaser3-merged-input' {
      * Iterate through players and check for interaction with defined keys
      */
     checkKeyboardInput(): void;
+	/**
+	 * When a keyboard button is pressed down, this function will emit a mergedInput event in the global registry.
+	 * The event contains a reference to the player assigned to the key, and passes a mapped action and value
+	 */
+	keyboardKeyDown(event: KeyboardEvent): void;
+	/**
+	 * When a keyboard button is released, this function will emit a mergedInput event in the global registry.
+	 * The event contains a reference to the player assigned to the key, and passes a mapped action and value
+	 */
+	 keyboardKeyUp(event: KeyboardEvent): void;
     /**
      * Iterate through players and check for interaction with defined pointer buttons
      */
