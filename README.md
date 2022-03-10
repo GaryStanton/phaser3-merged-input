@@ -92,11 +92,20 @@ mergedInput.defineKey(1, 'UP', 'UP')
 Then, interrogate your player objects to check for the state of the _action_, rather than the key, e.g.
 ```javascript
     if(player1.direction.DOWN) {
-        // Move your player down
+        // Move your player down. This will remain true for as long as the down button is depressed.
     }
 
     if(player2.buttons.B0 > 0) {
-        // Player two is pressing the first button
+        // Player two is pressing the first button. This will remain true for as long as B0 is depressed.
+    }
+
+    if(player1.interaction.device == 'gamepad') {
+        // Player one is using a gamepad, you may wish to update your prompts accordingly
+    }
+
+    if (['B8', 'B9', 'B0'].includes(player1.interaction.pressed)) {
+        // Player one has just pressed one of the following buttons - B8, B9 or B0
+        // The 'pressed' interaction flag differs from interrogating the buttons directly. It will contain the button pressed for a single update tick, as it happens.
     }
 ```
 
@@ -111,37 +120,48 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
-v1.1.0 - 2020-04-19
+v1.1.0 - 2020-04-19  
 Plugin now handles secondary directional movement from the second stick on a gamepad.
 Bearings and degrees have been added to direction objects.
 
-v1.2.0 - 2020-04-27
+v1.2.0 - 2020-04-27  
 You are now able to pass a player's X/Y position to a player object, whereupon the position of the mouse in relation to that player will be used to determine mouse bearings and degrees
 
-v1.2.1 - 2020-04-27
+v1.2.1 - 2020-04-27  
 Actually added the build files.
 
-v1.2.2 - 2020-05-03 
+v1.2.2 - 2020-05-03   
 Added secondary direction key detection, so that secondary directions may be instigated through a keypress as well as the right stick of a gamepad.
 Added timestamps to interactions making it possible to tell which was last used, e.g. keyboard vs mouse.
 
-v1.2.3 - 2020-05-08
+v1.2.3 - 2020-05-08  
 Added extra handling for 'null' gamepads.
 
-v1.2.4 - 2020-05-08
+v1.2.4 - 2020-05-08  
 And again, remembering to include the built files would be a bonus.
 
-v1.2.5 - 2021-05-04
+v1.2.5 - 2021-05-04  
 Updated buttondown and buttonup event listeners from per pad, to per input system.
 It seems the per pad listeners weren't firing for pad 2 and this method works around the problem.
 Also added an addPlayer call if the corresponding player is missing.
 Updated phaser dependancy
 
-v1.2.6 - 2021-05-04
+v1.2.6 - 2021-05-04  
 Guess who forgot to build again??
 
-v1.2.7 - 2021-07-06
+v1.2.7 - 2021-07-06  
 Changed the order of buffer/pressed checking in update loop.
+
+v1.2.8 - 2021-07-23  
+Added gamepad directions to interaction buffer/presses to match keyboard interactions.
+
+v1.3.0 - 2022-03-10  
+Migrated keyboard interaction flags from the `justDown` and `justUp` key functions, to instead use the keyboard's `keyDown` and `keyUp` events.
+This way we maintain consistancy between keyboard and gamepad interactions, as events trigger before the scene's update call.
+Added a new `released` key to the interaction object to indicate when a button has been released.
+Added a new `lastPressed` and `lastReleased` key, to replace the existing `pressed` key - the old `pressed` key remains for backwards compatability.
+Added TypeScript support.
+With many thanks to @zewa666 and @bbugh for help with this release.
 
 
 ## Credits
@@ -171,14 +191,6 @@ The keys struct contains arrays of keyboard characters or mouse buttons that wil
 </dd>
 <dt><a href="#checkKeyboardInput">checkKeyboardInput()</a></dt>
 <dd><p>Iterate through players and check for interaction with defined keys</p>
-</dd>
-<dt><a href="#gamepadButtonDown">gamepadButtonDown(index, value, button)</a></dt>
-<dd><p>When a gamepad button is pressed down, this function will emit a mergedInput event in the global registry.
-The event contains a reference to the player assigned to the gamepad, and passes a mapped action and value</p>
-</dd>
-<dt><a href="#gamepadButtonUp">gamepadButtonUp(index, value, button)</a></dt>
-<dd><p>When a gamepad button is released, this function will emit a mergedInput event in the global registry.
-The event contains a reference to the player assigned to the gamepad, and passes a mapped action and value</p>
 </dd>
 <dt><a href="#checkGamepadInput">checkGamepadInput()</a></dt>
 <dd><p>Iterate through gamepads and handle interactions</p>
@@ -234,34 +246,6 @@ Define a key for a player/action combination
 ## checkKeyboardInput()
 Iterate through players and check for interaction with defined keys
 
-
-<a name="gamepadButtonDown"></a>
-
-## gamepadButtonDown(index, value, button)
-When a gamepad button is pressed down, this function will emit a mergedInput event in the global registry.
-The event contains a reference to the player assigned to the gamepad, and passes a mapped action and value
-
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| index | <code>number</code> | Button index |
-| value | <code>number</code> | Button value |
-| button | <code>Phaser.Input.Gamepad.Button</code> | Phaser Button object |
-
-<a name="gamepadButtonUp"></a>
-
-## gamepadButtonUp(index, value, button)
-When a gamepad button is released, this function will emit a mergedInput event in the global registry.
-The event contains a reference to the player assigned to the gamepad, and passes a mapped action and value
-
-
-
-| Param | Type | Description |
-| --- | --- | --- |
-| index | <code>number</code> | Button index |
-| value | <code>number</code> | Button value |
-| button | <code>Phaser.Input.Gamepad.Button</code> | Phaser Button object |
 
 <a name="checkGamepadInput"></a>
 
