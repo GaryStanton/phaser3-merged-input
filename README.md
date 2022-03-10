@@ -156,12 +156,12 @@ v1.2.8 - 2021-07-23
 Added gamepad directions to interaction buffer/presses to match keyboard interactions.
 
 v1.3.0 - 2022-03-10  
-Migrated keyboard interaction flags from the `justDown` and `justUp` key functions, to instead use the keyboard's `keyDown` and `keyUp` events.
-This way we maintain consistancy between keyboard and gamepad interactions, as events trigger before the scene's update call.
-Added a new `released` key to the interaction object to indicate when a button has been released.
-Added a new `lastPressed` and `lastReleased` key, to replace the existing `pressed` key - the old `pressed` key remains for backwards compatability.
-Added TypeScript support.
-With many thanks to @zewa666 and @bbugh for help with this release.
+Migrated keyboard interaction flags from the `justDown` and `justUp` key functions, to instead use the keyboard's `keyDown` and `keyUp` events.  
+This way we maintain consistancy between keyboard and gamepad interactions, as events trigger before the scene's update call.  
+Added a new `released` key to the interaction object to indicate when a button has been released.  
+Added a new `lastPressed` and `lastReleased` key, to replace the existing `pressed` key - the old `pressed` key remains for backwards compatability.  
+Added TypeScript support.  
+With many thanks to @zewa666 and @bbugh for help with this release.  
 
 
 ## Credits
