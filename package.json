@@ -13,6 +13,14 @@
     "type": "git",
     "url": "git+https://github.com/garystanton/phaser3-merged-input.git"
   },
+  "keywords": [
+    "phaser",
+    "phaser-plugin",
+    "phaser3",
+    "phaser3-plugin",
+    "phaser3-gamepad",
+    "gamepad"
+  ],
   "author": "Gary Stanton",
   "license": "MIT",
   "bugs": {
