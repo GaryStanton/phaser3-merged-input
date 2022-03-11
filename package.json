@@ -6,7 +6,8 @@
   "scripts": {
     "build": "webpack --config webpack.build.config.js",
     "demo": "webpack --config webpack.demo.config.js",
-    "dev": "webpack --config webpack.demo.config.js"
+    "dev": "webpack --config webpack.demo.config.js",
+    "test": "echo \"No test specified\""
   },
   "types": "main.d.ts",
   "repository": {

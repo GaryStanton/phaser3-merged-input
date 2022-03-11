@@ -359,6 +359,23 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 		}
 
 		/**
+   * Clear the interaction buffer for the given player
+   * @param {*} thisPlayer 
+   */
+
+	}, {
+		key: 'clearBuffer',
+		value: function clearBuffer(thisPlayer) {
+			if (thisPlayer.interaction.pressed != '') {
+				thisPlayer.interaction.buffer = '';
+			}
+			if (thisPlayer.interaction.buffer == '') {
+				thisPlayer.interaction.pressed = '';
+				thisPlayer.interaction.released = '';
+			}
+		}
+
+		/**
    * Set up the gamepad and associate with a player object
    */
 
@@ -579,6 +596,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 			controls.interaction.buffer = '';
 			controls.interaction.pressed = '';
+			controls.interaction.released = '';
 			controls.interaction.last = '';
 			controls.interaction.lastPressed = '';
 			controls.interaction.lastReleased = '';
@@ -899,27 +917,33 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 		key: 'gamepadButtonUp',
 		value: function gamepadButtonUp(pad, button, value) {
 			this.players[pad.index].interaction.device = 'gamepad';
+
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: value, player: pad.index, action: 'B' + button.index, state: 'UP' });
 			// DPad mapping
 			if (button.index === 12) {
 				this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'UP', state: 'UP' });
+				this.players[pad.index].interaction.released = 'UP';
 				this.players[pad.index].interaction.lastReleased = 'UP';
 			}
 			if (button.index === 13) {
 				this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'DOWN', state: 'UP' });
+				this.players[pad.index].interaction.released = 'DOWN';
 				this.players[pad.index].interaction.lastReleased = 'DOWN';
 			}
 			if (button.index === 14) {
 				this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'LEFT', state: 'UP' });
+				this.players[pad.index].interaction.released = 'LEFT';
 				this.players[pad.index].interaction.lastReleased = 'LEFT';
 			}
 			if (button.index === 15) {
 				this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'RIGHT', state: 'UP' });
+				this.players[pad.index].interaction.released = 'RIGHT';
 				this.players[pad.index].interaction.lastReleased = 'RIGHT';
 			}
 
 			if (![12, 13, 14, 15].includes(button.index)) {
 				// Update the last button state
+				this.players[pad.index].interaction.released = 'B' + button.index;
 				this.players[pad.index].interaction.lastReleased = 'B' + button.index;
 				this.players[pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
 			} else {
@@ -1116,6 +1140,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 			this.eventEmitter.emit('mergedInput', { device: 'pointer', value: 1, player: 0, action: action, state: 'UP' });
 
 			this.players[0].pointer[action] = 0;
+			this.players[0].interaction.released = action;
 			this.players[0].interaction.lastReleased = action;
 			this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
 		}
