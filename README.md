@@ -163,6 +163,11 @@ Added a new `lastPressed` and `lastReleased` key, to replace the existing `press
 Added TypeScript support.  
 With many thanks to @zewa666 and @bbugh for help with this release.  
 
+v1.3.1 - 2022-03-11
+Fixed missing code caused by bad merge!
+Added keywords
+Clean up readme.md
+
 
 ## Credits
 Written by [Gary Stanton](https://garystanton.co.uk)  
