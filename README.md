@@ -14,8 +14,8 @@ Each player object contains direction and button actions. These are updated by t
 . Global events emitted on button down/up.  
 . Check for gamepad button presses (i.e. ‘justDown()’ functionality for gamepads)  
 . Check the last device type used for interaction.  
-· Button mapping to consistent names such as 'RC_X' for the right cluster of buttons -- (NEW in v1.4.0)
-· Normalising of gamepad devices, including generating dpad events for gamepads that map them as axis internally -- (NEW in v1.4.0)
+· (v1.4.0) Button mapping to consistent names such as 'RC_X' for the right cluster of buttons  
+· (v1.4.0) Normalising of gamepad devices, including generating dpad events for gamepads that map them as axis internally  
 
 ## Installation
 
