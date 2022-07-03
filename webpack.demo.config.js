@@ -58,7 +58,8 @@ module.exports = {
             port: process.env.PORT || 3000,
             server: {
                 baseDir: ['./', './dev']
-            }
+            },
+            https: true
         })
     ],
     module: {

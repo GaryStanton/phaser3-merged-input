@@ -14,6 +14,8 @@ Each player object contains direction and button actions. These are updated by t
 . Global events emitted on button down/up.  
 . Check for gamepad button presses (i.e. ‘justDown()’ functionality for gamepads)  
 . Check the last device type used for interaction.  
+· Button mapping to consistent names such as 'RC_X' for the right cluster of buttons -- (NEW in v1.4.0)
+· Normalising of gamepad devices, including generating dpad events for gamepads that map them as axis internally -- (NEW in v1.4.0)
 
 ## Installation
 
@@ -89,6 +91,22 @@ mergedInput.defineKey(1, 'UP', 'UP')
     .defineKey(1, 'B3', 'NUMPAD_3')
 ```
 
+### NEW in v1.4.0
+You may now choose to use 'mapped button names' to define keys, instead of button numbers.
+The plugin will attempt to map each button to the corresponding number, depending on the type of joypad entered.
+So, instead of using B0, which is the 'A' button on an Xbox controller, but the 'B' button on an 8-bit Do controller, and the 'X' button on a GeeekPi controller, you can now use 'RC_S' for 'Right cluster: South' - for a more consistent approach.
+```javascript
+    var player1 = mergedInput.addPlayer(0);
+    mergedInput.defineKey(0, 'UP', 'W')
+        .defineKey(0, 'DOWN', 'S')
+        .defineKey(0, 'LEFT', 'A')
+        .defineKey(0, 'RIGHT', 'D')
+        .defineKey(0, 'RC_S', 'U')
+        .defineKey(0, 'RC_E', 'I')
+        .defineKey(0, 'RC_W', 'O')
+        .defineKey(0, 'RC_N', 'P')
+```
+
 Then, interrogate your player objects to check for the state of the _action_, rather than the key, e.g.
 ```javascript
     if(player1.direction.DOWN) {
@@ -99,6 +117,14 @@ Then, interrogate your player objects to check for the state of the _action_, ra
         // Player two is pressing the first button. This will remain true for as long as B0 is depressed.
     }
 
+    if(player1.buttons_mapped.RC_W > 0) {
+        // Player one is pressing left button in the right cluster. This will remain true for as long as the button is depressed.
+    }
+
+    if(player1.buttons_mapped.START > 0) {
+        // Player one is pressing what the plugin considers to be the 'start' button - depending on the controller config
+    }
+
     if(player1.interaction.device == 'gamepad') {
         // Player one is using a gamepad, you may wish to update your prompts accordingly
     }
@@ -107,10 +133,15 @@ Then, interrogate your player objects to check for the state of the _action_, ra
         // Player one has just pressed one of the following buttons - B8, B9 or B0
         // The 'pressed' interaction flag differs from interrogating the buttons directly. It will contain the button pressed for a single update tick, as it happens.
     }
+
+    if (['RC_S', 'LC_E'].includes(player1.interaction.pressed)) {
+        // Player one has just pressed one of the following buttons - Right cluster: South or Left cluster (DPad): East
+    }
 ```
 
 ## Demo / Dev
 A demo scene is included in the repository.  
+The demo has been updated to incorporate the mapped buttons and interactions included in v1.4.0
 ![](src/demo/merged-input-demo.gif)  
 Install with `npm install`, then use `npm run dev` to spin up a development server and run the demo scene.
 
@@ -167,6 +198,12 @@ v1.3.1 - 2022-03-11
 Fixed missing code caused by bad merge!  
 Added keywords  
 Clean up readme.md  
+
+v1.4.0 - 2022-07-03
+Added normalisation of gamepad devices, using mapping files located in the new `configs` folder.
+Added friendly mapped button names, and a new batch of properties under `interaction_mapped` and `buttons_mapped`.
+Added fake DPad functionality to better handle joypads that map their DPads to the left axis, instead of the standard buttons 12-15.
+Added a debug scene to the demo.
 
 
 ## Credits

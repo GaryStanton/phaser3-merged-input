@@ -1,10 +1,13 @@
+import bearings from './configs/bearings'
+import controlManager from './controlManager'
+
 export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 	/**
 	 * The Merged Input plugin is designed to run in the background and handle input.
 	 * Upon detecting a keypress or gamepad interaction, the plugin will update a player object and emit global events.
 	 *
-	 * @extends Phaser.Scene
+	 * @extends Phaser.Plugins.ScenePlugin
 	 * @param {*} scene
 	 * @param {*} pluginManager
 	 */
@@ -19,52 +22,16 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		// Keys object to store Phaser key objects. We'll check these during update
 		this.keys = {};
 
-		this.bearings = {
-			'-180': 'W',
-			'-168.75': 'WBN',
-			'-157.5': 'WNW',
-			'-146.25': 'NWBW',
-			'-135': 'NW',
-			'-123.75': 'NWBN',
-			'-112.5': 'NNW',
-			'-101.25': 'NBW',
-			'-90': 'N',
-			'-78.75': 'NBE',
-			'-67.5': 'NNE',
-			'-56.25': 'NEBN',
-			'-45': 'NE',
-			'-33.75': 'NEBE',
-			'-22.5': 'EBE',
-			'-11.25': 'EBN',
-			'0': 'E',
-			'11.25': 'EBS',
-			'22.5': 'ESE',
-			'33.75': 'SEBE',
-			'45': 'SE',
-			'56.25': 'SEBS',
-			'67.5': 'SSE',
-			'78.75': 'SBE',
-			'90': 'S',
-			'101.25': 'SBW',
-			'112.5': 'SSW',
-			'123.75': 'SWBS',
-			'135': 'SW',
-			'146.25': 'SWBW',
-			'157.5': 'WSW',
-			'168.75': 'WBS',
-			'180': 'W'
-		};
-	}
+		this.bearings = bearings;
 
-	refreshGamepads() {
-		// Sometimes, gamepads are undefined. For some reason.
-		this.gamepads = this.systems.input.gamepad.gamepads.filter(function (el) {
-			return el != null;
-		});
-
-		for (const [index, thisGamepad] of this.gamepads.entries()) {
-			thisGamepad.index = index; // Overwrite the gamepad index, in case we had undefined gamepads earlier
+		this.dpadMappings = {
+			'UP': 12,
+			'DOWN': 13,
+			'LEFT': 14,
+			'RIGHT': 15
 		}
+
+		this.controlManager = new controlManager()
 	}
 
 	boot() {
@@ -74,7 +41,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 		// Gamepad
 		if (typeof this.systems.input.gamepad !== 'undefined') {
-			this.systems.input.gamepad.once('connected', function (thisGamepad) {
+			this.systems.input.gamepad.on('connected', function (thisGamepad) {
 				this.refreshGamepads();
 				this.setupGamepad(thisGamepad)
 			}, this);
@@ -147,16 +114,25 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 	/**
 	 * Clear the interaction buffer for the given player
+	 * In the case of 'fake' DPad presses, we're using some convoluted buffers to keep the 'pressed' and 'released' values around for an extra tick
+	 * As they're created in this update loop, they're otherwise cleared before the consumer can use them.
 	 * @param {*} thisPlayer 
 	 */
 	clearBuffer(thisPlayer) {
-		if (thisPlayer.interaction.pressed != '') {
+		if (thisPlayer.interaction.pressed != '' && thisPlayer.internal.fakedpadPressed == '') {
 			thisPlayer.interaction.buffer = '';
 		}
 		if (thisPlayer.interaction.buffer == '') {
 			thisPlayer.interaction.pressed = '';
-			thisPlayer.interaction.released = '';
+			thisPlayer.interaction_mapped.pressed = '';
+			if (thisPlayer.internal.fakedpadReleased == '') {
+				thisPlayer.interaction.released = '';
+				thisPlayer.interaction_mapped.released = '';
+			}
 		}
+
+		thisPlayer.internal.fakedpadPressed = '';
+		thisPlayer.internal.fakedpadReleased = '';
 	}
 
 	/**
@@ -168,19 +144,48 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		if (typeof this.players[thisGamepad.index] === 'undefined') {
 			this.addPlayer();
 		}
+		
+		let gamepadID = thisGamepad.id.toLowerCase();
 		this.players[thisGamepad.index].gamepad = thisGamepad;
+
+		// Map the gamepad buttons
+		let mappedPad = this.controlManager.mapGamepad(gamepadID);
+		this.players[thisGamepad.index].gamepadMapping = mappedPad.gamepadMapping;
+		this.players[thisGamepad.index].interaction_mapped.gamepadType = mappedPad.padType;
+		for (let thisButton in this.players[thisGamepad.index].gamepadMapping) {
+			this.players[thisGamepad.index].buttons_mapped[thisButton] = 0;
+		}
+	}
+
+
+	refreshGamepads() {
+		// Sometimes, gamepads are undefined. For some reason.
+		this.gamepads = this.systems.input.gamepad.gamepads.filter(function (el) {
+			return el != null;
+		});
+
+		for (const [index, thisGamepad] of this.gamepads.entries()) {
+			thisGamepad.index = index; // Overwrite the gamepad index, in case we had undefined gamepads earlier
+
+			/**
+			 * Some cheap gamepads use the first axis as a dpad, in which case we won't have the dpad buttons 12-15
+			 */
+			thisGamepad.fakedpad = thisGamepad.buttons.length < 15;
+		}
 	}
 
 	/**
 	 * Add a new player object to the players array
 	 * @param {number} index Player index - if a player object at this index already exists, it will be returned instead of creating a new player object
+	 * @param {number} numberOfButtons The number of buttons to assign to the player object. Defaults to 16. Fewer than 16 is not recommended, as gamepad DPads typically map to buttons 12-15
 	 */
-	addPlayer(index) {
+	addPlayer(index, numberOfButtons) {
+		numberOfButtons = numberOfButtons || 16;
 		if (typeof Number.isInteger(index) && typeof this.players[index] !== 'undefined') {
 			return this.players[index];
 		}
 		else {
-			this.players.push(this.setupControls());
+			this.players.push(this.controlManager.setupControls(numberOfButtons));
 			this.players[this.players.length - 1].index = this.players.length - 1;
 			return this.players[this.players.length - 1];
 		}
@@ -214,7 +219,13 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			for (var thisKey in thisPlayer.keys) {
 				for (var thisValue of thisPlayer.keys[thisKey]) {
 					if (thisValue == key) {
-						return thisKey;
+						// Now we have a matching button value, check to see if it's in our mapped buttons, in which case we want to return the button number it matches to
+						if (typeof thisPlayer.gamepadMapping[thisKey] !== "undefined") {
+							return 'B' + thisPlayer.gamepadMapping[thisKey];
+						}
+						else {
+							return thisKey;
+						}
 					}
 				}
 			}
@@ -222,72 +233,28 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		return '';
 	}
 
+
 	/**
-	 * Returns a struct to hold input control information
-	 * Set up a struct for each player in the game
-	 * Direction and Buttons contain the input from the devices
-	 * The keys struct contains arrays of keyboard characters that will trigger the action
+	 * Return an array of actions that a player may use
+	 * @param {number} player 
+	 * @returns 
 	 */
-	setupControls() {
-		let controls = {
-			'direction': {
-				'UP': 0,
-				'DOWN': 0,
-				'LEFT': 0,
-				'RIGHT': 0,
-				'BEARING': '',
-				'BEARING_LAST': '',
-				'DEGREES': 0,
-				'DEGREES_LAST': 0,
-				'TIMESTAMP': 0
-			},
-			'direction_secondary': {
-				'UP': 0,
-				'DOWN': 0,
-				'LEFT': 0,
-				'RIGHT': 0,
-				'BEARING': '',
-				'DEGREES': 0,
-				'BEARING_LAST': '',
-				'DEGREES_LAST': 0,
-				'TIMESTAMP': 0
-			},
-			'buttons': {},
-			'pointer': {
-				'M1': 0,
-				'M2': 0,
-				'M3': 0,
-				'M4': 0,
-				'M5': 0,
-				'BEARING': '',
-				'BEARING_DEGREES': 0,
-				'ANGLE': 0,
-				'TIMESTAMP': 0
-			},
-			'position': {},
-			'interaction': {},
-			'gamepad': {},
-			'keys': {
-				'UP': [],
-				'DOWN': [],
-				'LEFT': [],
-				'RIGHT': [],
-			}
-		}
-		for (let i = 1; i <= 16; i++) {
-			controls.buttons['B' + i] = 0;
-			controls.keys['B' + i] = [];
-		}
+	getPlayerActions(player) {
+		let actions = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT'];
+		actions.push(...Object.keys(this.players[player].gamepadMapping));
+		actions.push(...Object.keys(this.players[player].buttons));
 
-		controls.interaction.buffer = '';
-		controls.interaction.pressed = '';
-		controls.interaction.released = '';
-		controls.interaction.last = '';
-		controls.interaction.lastPressed = '';
-		controls.interaction.lastReleased = '';
-		controls.interaction.device = '';
+		return actions;
+	}
 
-		return controls;
+	/**
+	 * Given a player and a button ID, return the mapped button name, e.g. 0 = 'RC_S' (Right cluster, South - X on an xbox gamepad)
+	 * @param {*} player 
+	 * @param {*} buttonID 
+	 */
+	getMappedButton(player, buttonID) {
+		buttonID = buttonID.toString().replace(/\D/g, '');
+		return Object.keys(player.gamepadMapping).find(key => player.gamepadMapping[key] == buttonID);
 	}
 
 	// Keyboard functions
@@ -305,7 +272,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			this.addPlayer();
 		}
 
-		if (['UP', 'DOWN', 'LEFT', 'RIGHT', 'ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT', 'B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16'].includes(action)) {
+		if (this.getPlayerActions(player).includes(action)) {
 			if (append && (typeof this.players[player].keys[action] !== 'undefined')) {
 				this.players[player].keys[action].push([value]);
 			}
@@ -335,16 +302,29 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 				}
 
 				// Set the action in the player object
+
+				// Dpad
 				if (['UP', 'DOWN', 'LEFT', 'RIGHT'].includes(thisKey)) {
 					thisPlayer.direction[thisKey] = action;
 					thisPlayer.direction.TIMESTAMP = this.scene.sys.time.now;
 				}
+				// Alternative direction
 				else if (['ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT'].includes(thisKey)) {
 					thisPlayer.direction_secondary[thisKey.replace('ALT_', '')] = action;
 					if (action == 1) {
 						thisPlayer.direction_secondary.TIMESTAMP = this.scene.sys.time.now;
 					}
 				}
+				// Friendly button names
+				else if (thisKey in thisPlayer.gamepadMapping) {
+					// Get the button number from the gamepad mapping
+					thisPlayer.buttons['B' + thisPlayer.gamepadMapping[thisKey]] = action;
+					thisPlayer.buttons_mapped[thisKey] = action;
+					if (action == 1) {
+						thisPlayer.buttons.TIMESTAMP = this.scene.sys.time.now;
+					}
+				}
+				// Numbered buttons
 				else {
 					thisPlayer.buttons[thisKey] = action;
 					if (action == 1) {
@@ -378,6 +358,21 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisPlayer.interaction.buffer = playerAction;
 			thisPlayer.interaction.last = playerAction;
 			thisPlayer.interaction.lastPressed = playerAction;
+
+			// Update mapped button object
+			if (typeof this.dpadMappings[playerAction] !== "undefined") {
+				playerAction = 'B' + this.dpadMappings[playerAction];
+			}
+			if (typeof thisPlayer.buttons[playerAction] !== "undefined") {
+				let mappedButton = this.getMappedButton(thisPlayer, playerAction);
+				if (typeof mappedButton !== "undefined") {
+					thisPlayer.buttons_mapped[mappedButton] = 1;
+					thisPlayer.interaction_mapped.pressed = mappedButton;
+					thisPlayer.interaction_mapped.last = mappedButton;
+					thisPlayer.interaction_mapped.lastPressed = mappedButton;
+					thisPlayer.interaction_mapped.gamepadType = 'keyboard';
+				}
+			}
 		}
 	}
 
@@ -397,6 +392,20 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisPlayer.interaction.device = 'keyboard';
 			thisPlayer.interaction.released = playerAction;
 			thisPlayer.interaction.lastReleased = playerAction;
+			
+			// Update mapped button object
+			if (typeof this.dpadMappings[playerAction] !== "undefined") {
+				playerAction = 'B' + this.dpadMappings[playerAction];
+			}
+			if (typeof thisPlayer.buttons[playerAction] !== "undefined") {
+				let mappedButton = this.getMappedButton(thisPlayer, playerAction);
+				if (typeof mappedButton !== "undefined") {
+					thisPlayer.buttons_mapped[mappedButton] = 0;
+					thisPlayer.interaction_mapped.released = mappedButton;
+					thisPlayer.interaction_mapped.lastReleased = mappedButton;
+					thisPlayer.interaction_mapped.gamepadType = 'keyboard';
+				}
+			}
 		}
 	}
 
@@ -433,50 +442,43 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 */
 	gamepadButtonDown(pad, button, value) {
 		this.players[pad.index].interaction.device = 'gamepad';
-
+		this.players[pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
 		this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: value, player: pad.index, action: 'B' + button.index, state: 'DOWN' });
 
-		// DPad mapping
-		if (button.index === 12) {
-			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'UP', state: 'DOWN' });
-			this.players[pad.index].interaction.pressed = 'UP';
-			this.players[pad.index].interaction.last = 'UP';
-			this.players[pad.index].interaction.lastPressed = 'UP';
-			this.players[pad.index].interaction.buffer = 'UP';
-		}
-		if (button.index === 13) {
-			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'DOWN', state: 'DOWN' });
-			this.players[pad.index].interaction.pressed = 'DOWN';
-			this.players[pad.index].interaction.last = 'DOWN';
-			this.players[pad.index].interaction.lastPressed = 'DOWN';
-			this.players[pad.index].interaction.buffer = 'DOWN';
-		}
-		if (button.index === 14) {
-			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'LEFT', state: 'DOWN' });
-			this.players[pad.index].interaction.pressed = 'LEFT';
-			this.players[pad.index].interaction.last = 'LEFT';
-			this.players[pad.index].interaction.lastPressed = 'LEFT';
-			this.players[pad.index].interaction.buffer = 'LEFT';
-		}
-		if (button.index === 15) {
-			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'RIGHT', state: 'DOWN' });
-			this.players[pad.index].interaction.pressed = 'RIGHT';
-			this.players[pad.index].interaction.last = 'RIGHT';
-			this.players[pad.index].interaction.lastPressed = 'RIGHT';
-			this.players[pad.index].interaction.buffer = 'RIGHT';
-		}
-
-		// Last button pressed
+		// Buttons
 		if (![12, 13, 14, 15].includes(button.index)) {
 			// Update the last button state
 			this.players[pad.index].interaction.pressed = 'B' + button.index;
 			this.players[pad.index].interaction.last = 'B' + button.index;
 			this.players[pad.index].interaction.lastPressed = 'B' + button.index;
 			this.players[pad.index].interaction.buffer = 'B' + button.index;
-			this.players[pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
+
+			// Update mapped button object
+			let mappedButton = this.getMappedButton(this.players[pad.index], button.index);
+			if (typeof mappedButton !== "undefined") {
+				this.players[pad.index].interaction_mapped.pressed = mappedButton;
+				this.players[pad.index].interaction_mapped.last = mappedButton;
+				this.players[pad.index].interaction_mapped.lastPressed = mappedButton;
+			} 
 		}
+		// DPad
 		else {
+			let dpadMapping = this.dpadMappings;
+			let direction = Object.keys(dpadMapping).find(key => dpadMapping[key] == button.index);
+			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: direction, state: 'DOWN' });
+			this.players[pad.index].interaction.pressed = direction;
+			this.players[pad.index].interaction.last = direction;
+			this.players[pad.index].interaction.lastPressed = direction;
+			this.players[pad.index].interaction.buffer = direction;
 			this.players[pad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+
+			// Update mapped button object
+			let mappedButton = this.getMappedButton(this.players[pad.index], button.index);
+			if (typeof mappedButton !== "undefined") {
+				this.players[pad.index].interaction_mapped.pressed = mappedButton;
+				this.players[pad.index].interaction_mapped.last = mappedButton;
+				this.players[pad.index].interaction_mapped.lastPressed = mappedButton;
+			} 
 		}
 	}
 
@@ -489,38 +491,69 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 */
 	gamepadButtonUp(pad, button, value) {
 		this.players[pad.index].interaction.device = 'gamepad';
+		this.players[pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
 
 		this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: value, player: pad.index, action: 'B' + button.index, state: 'UP' });
-		// DPad mapping
-		if (button.index === 12) {
-			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'UP', state: 'UP' });
-			this.players[pad.index].interaction.released = 'UP';
-			this.players[pad.index].interaction.lastReleased = 'UP';
-		}
-		if (button.index === 13) {
-			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'DOWN', state: 'UP' });
-			this.players[pad.index].interaction.released = 'DOWN';
-			this.players[pad.index].interaction.lastReleased = 'DOWN';
-		}
-		if (button.index === 14) {
-			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'LEFT', state: 'UP' });
-			this.players[pad.index].interaction.released = 'LEFT';
-			this.players[pad.index].interaction.lastReleased = 'LEFT';
-		}
-		if (button.index === 15) {
-			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: 'RIGHT', state: 'UP' });
-			this.players[pad.index].interaction.released = 'RIGHT';
-			this.players[pad.index].interaction.lastReleased = 'RIGHT';
-		}
 
+		// Buttons
 		if (![12, 13, 14, 15].includes(button.index)) {
 			// Update the last button state
 			this.players[pad.index].interaction.released = 'B' + button.index;
 			this.players[pad.index].interaction.lastReleased = 'B' + button.index;
-			this.players[pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
+
+			// Update mapped button object
+			let mappedButton = this.getMappedButton(this.players[pad.index], button.index);
+			if (typeof mappedButton !== "undefined") {
+				this.players[pad.index].interaction_mapped.released = mappedButton;
+				this.players[pad.index].interaction_mapped.lastReleased = mappedButton;
+			} 
 		}
+		// DPad
 		else {
-			this.players[pad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+			let dpadMapping = this.dpadMappings;
+			let direction = Object.keys(dpadMapping).find(key => dpadMapping[key] == button.index);
+			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: direction, state: 'UP' });
+			this.players[pad.index].interaction.released = direction;
+			this.players[pad.index].interaction.lastReleased = direction;
+
+			// Update mapped button object
+			let mappedButton = this.getMappedButton(this.players[pad.index], button.index);
+			if (typeof mappedButton !== "undefined") {
+				this.players[pad.index].interaction_mapped.released = mappedButton;
+				this.players[pad.index].interaction_mapped.lastReleased = mappedButton;
+			} 
+		}
+	}
+
+	/**
+	 * Some gamepads map dpads to axis. Here we insert the direction into a buffer that we can use to simulate DPad down/up events
+	 * 
+	 */
+	gamepadFakeDPadPress(gamepad, direction) {
+		if (this.players[gamepad.index].internal.fakedpadBuffer != direction) {
+			this.players[gamepad.index].internal.fakedpadBuffer = direction;
+			this.players[gamepad.index].internal.fakedpadPressed = direction;
+			
+			let thisButton = new Phaser.Input.Gamepad.Button(gamepad, this.dpadMappings[direction])
+			thisButton.value = 1;
+			thisButton.pressed = true;
+			thisButton.events.emit('down', gamepad, thisButton, 1)
+			this.systems.input.gamepad.emit('down', gamepad, thisButton, 1);
+		}
+	}
+
+	gamepadFakeDPadRelease(gamepad) {
+		if (this.players[gamepad.index].internal.fakedpadBuffer != '') {
+			let direction = this.players[gamepad.index].internal.fakedpadBuffer;
+			this.players[gamepad.index].internal.fakedpadReleased = direction;
+
+			let thisButton = new Phaser.Input.Gamepad.Button(gamepad, this.dpadMappings[direction])
+			thisButton.value = 0;
+			thisButton.pressed = false;
+			thisButton.events.emit('up', gamepad, thisButton, 0)
+			this.systems.input.gamepad.emit('up', gamepad, thisButton, 0);			
+
+			this.players[gamepad.index].internal.fakedpadBuffer = '';
 		}
 	}
 
@@ -536,14 +569,26 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 				this.addPlayer();
 			}
 
+			let direction = '';
+
 			// Directions
 			if (thisGamepad.leftStick.y < -0.5) {
 				this.players[thisGamepad.index].direction.UP = Math.abs(thisGamepad.leftStick.y)
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+
+				if (thisGamepad.fakedpad) {
+					this.gamepadFakeDPadPress(thisGamepad, 'UP');
+					direction = 'UP'
+				}
 			}
 			else if (thisGamepad.leftStick.y > 0.5) {
 				this.players[thisGamepad.index].direction.DOWN = thisGamepad.leftStick.y
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+				
+				if (thisGamepad.fakedpad) {
+					this.gamepadFakeDPadPress(thisGamepad, 'DOWN');
+					direction = 'DOWN'
+				}
 			}
 			else if (this.players[thisGamepad.index].interaction.device === 'gamepad') {
 				// DPad
@@ -554,15 +599,29 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			if (thisGamepad.leftStick.x < -0.5) {
 				this.players[thisGamepad.index].direction.LEFT = Math.abs(thisGamepad.leftStick.x)
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+
+				if (thisGamepad.fakedpad) {
+					this.gamepadFakeDPadPress(thisGamepad, 'LEFT');
+					direction = 'LEFT'
+				}
 			}
 			else if (thisGamepad.leftStick.x > 0.5) {
 				this.players[thisGamepad.index].direction.RIGHT = thisGamepad.leftStick.x
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+				
+				if (thisGamepad.fakedpad) {
+					this.gamepadFakeDPadPress(thisGamepad, 'RIGHT');
+					direction = 'RIGHT'
+				}
 			}
 			else if (this.players[thisGamepad.index].interaction.device === 'gamepad') {
 				// DPad
 				this.players[thisGamepad.index].direction.LEFT = thisGamepad.left ? 1 : 0;
 				this.players[thisGamepad.index].direction.RIGHT = thisGamepad.right ? 1 : 0;
+			}
+
+			if (thisGamepad.fakedpad && direction == '') {
+				this.gamepadFakeDPadRelease(thisGamepad);
 			}
 
 			// Secondary
@@ -594,10 +653,15 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 			if (this.players[thisGamepad.index].interaction.device === 'gamepad') {
 				// Buttons
-
 				for (var b = 0; b < thisGamepad.buttons.length; b++) {
 					let button = thisGamepad.buttons[b];
 					this.players[thisGamepad.index].buttons['B' + b] = button.value;
+
+					// Get mapped name for this button number and artificially update the relevant buttons_mapped key
+					let mappedButton = this.getMappedButton(this.players[thisGamepad.index], b);
+					if (typeof mappedButton !== "undefined") {
+						this.players[thisGamepad.index].buttons_mapped[mappedButton] = button.value;
+					} 
 				}
 			}
 		}
@@ -791,7 +855,6 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		}
 	}
 
-
 	destroy() {
 		this.shutdown();
 		this.scene = undefined;
@@ -806,6 +869,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			'input': {}
 		};
 		debug.input.gamepads = [];
+		
 		for (var i = 0; i < this.gamepads.length; i++) {
 			let pad = this.gamepads[i];
 			let buttons = {};
@@ -833,8 +897,11 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		for (let thisPlayer of this.players) {
 			debug.players.push({
 				'interaction': thisPlayer.interaction,
-				'device': thisPlayer.device,
+				'interaction_mapped': thisPlayer.interaction_mapped,
+//				'device': thisPlayer.interaction.device,
 				'buttons': thisPlayer.buttons,
+				'buttons_mapped': thisPlayer.buttons_mapped,
+				'interaction_mapped': thisPlayer.interaction_mapped,
 				'pointer': thisPlayer.pointer,
 				'direction': thisPlayer.direction,
 				'direction_secondary': thisPlayer.direction_secondary,

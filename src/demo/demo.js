@@ -1,53 +1,25 @@
-import MergedInput from "../main";
-
 export default class Demo extends Phaser.Scene {
 
     preload() {
-        this.load.scenePlugin('mergedInput', MergedInput);
-		this.load.multiatlas('gamepad', 'assets/gamepad.json', 'assets');
+        // Input controller scene
+        this.scene.launch('InputController')
+        this.load.multiatlas('gamepad', 'assets/gamepad.json', 'assets');
     }
 
     create() {
-        // Setup player objects
-        this.player1 = this.mergedInput.addPlayer(0);
-        this.player2 = this.mergedInput.addPlayer(1);
+        // Get the input controller scene, which contains our player objects
+        this.inputController = this.scene.get('InputController');
 
-        // Define keys (player, action, key, append)
-		this.mergedInput
-			.defineKey(0, 'UP', 'W')
-			.defineKey(0, 'DOWN', 'S')
-			.defineKey(0, 'LEFT', 'A')
-            .defineKey(0, 'RIGHT', 'D')
+        // Get our player objects
+        this.player1 = this.inputController.player1;
+        this.player2 = this.inputController.player2;
 
-            .defineKey(1, 'UP', 'UP')
-            .defineKey(1, 'DOWN', 'DOWN')
-            .defineKey(1, 'LEFT', 'LEFT')
-            .defineKey(1, 'RIGHT', 'RIGHT')
+        // Set up an array of player objects
+        this.players = [this.player1, this.player2]
 
-            .defineKey(0, 'B0', 'ONE')
-            .defineKey(0, 'B1', 'TWO')
-            .defineKey(0, 'B2', 'THREE')
-            .defineKey(0, 'B3', 'FOUR')
-            .defineKey(0, 'B4', 'FIVE')
-            .defineKey(0, 'B5', 'SIX')
-            .defineKey(0, 'B6', 'SEVEN')
-            .defineKey(0, 'B7', 'EIGHT')
-            .defineKey(0, 'B8', 'NINE')
-            .defineKey(0, 'B9', 'ZERO')
-
-            .defineKey(1, 'B0', 'NUMPAD_ONE')
-            .defineKey(1, 'B1', 'NUMPAD_TWO')
-            .defineKey(1, 'B2', 'NUMPAD_THREE')
-            .defineKey(1, 'B3', 'NUMPAD_FOUR')
-            .defineKey(1, 'B4', 'NUMPAD_FIVE')
-            .defineKey(1, 'B5', 'NUMPAD_SIX')
-            .defineKey(1, 'B6', 'NUMPAD_SEVEN')
-            .defineKey(1, 'B7', 'NUMPAD_EIGHT')
-            .defineKey(1, 'B8', 'NUMPAD_NINE')
-            .defineKey(1, 'B9', 'NUMPAD_ZERO')
-            ;
 
         // Set up some gamepad sprites for testing
+        // We can check for button numbers, or mapped button names, and to illustrate this point, Player 1 uses button numbers and Player 2 uses button names
         this.player1.sprites = {
             'dpad': this.add.image(100, 350, 'gamepad', 'XboxOne_Dpad').setScale(2),
             'B0':   this.add.image(370, 420, 'gamepad', 'XboxOne_A'),
@@ -62,14 +34,14 @@ export default class Demo extends Phaser.Scene {
 
         this.player2.sprites = {
             'dpad': this.add.image(800, 350, 'gamepad', 'XboxOne_Dpad').setScale(2),
-            'B0':   this.add.image(1070, 420, 'gamepad', 'XboxOne_A'),
-            'B1':   this.add.image(1140, 350, 'gamepad', 'XboxOne_B'),
-            'B2':   this.add.image(1000, 350, 'gamepad', 'XboxOne_X'),
-            'B3':   this.add.image(1070, 280, 'gamepad', 'XboxOne_Y'),
-            'B4':   this.add.image(770, 200, 'gamepad', 'XboxOne_LB'),
-            'B5':   this.add.image(1130, 200, 'gamepad', 'XboxOne_RB'),
-            'B6':   this.add.image(770, 130, 'gamepad', 'XboxOne_LT'),
-            'B7':   this.add.image(1130, 130, 'gamepad', 'XboxOne_RT')
+            'RC_S': this.add.image(1070, 420, 'gamepad', 'XboxOne_A'),
+            'RC_E': this.add.image(1140, 350, 'gamepad', 'XboxOne_B'),
+            'RC_W': this.add.image(1000, 350, 'gamepad', 'XboxOne_X'),
+            'RC_N': this.add.image(1070, 280, 'gamepad', 'XboxOne_Y'),
+            'LB':   this.add.image(770, 200, 'gamepad', 'XboxOne_LB'),
+            'RB':   this.add.image(1130, 200, 'gamepad', 'XboxOne_RB'),
+            'LT':   this.add.image(770, 130, 'gamepad', 'XboxOne_LT'),
+            'RT':   this.add.image(1130, 130, 'gamepad', 'XboxOne_RT')
         }
 
         // Set up some debug text
@@ -99,9 +71,8 @@ export default class Demo extends Phaser.Scene {
     }
 
     update() {
-
         // Loop through player object
-        for (let thisPlayer of this.mergedInput.players) {
+        for (let thisPlayer of this.players) {
 
             // Reset dpad frame
             thisPlayer.sprites.dpad.setFrame('XboxOne_Dpad');
@@ -119,34 +90,48 @@ export default class Demo extends Phaser.Scene {
             if (thisPlayer.direction.LEFT > 0) {
                 thisPlayer.sprites.dpad.setFrame('XboxOne_Dpad_Left');
             }
+        }
 
-            for (let thisButton in thisPlayer.buttons) {
-                if (typeof thisPlayer.sprites[thisButton] !== 'undefined') {
-                    if (thisPlayer.buttons[thisButton] > 0) {
-                        this.tintButton(thisPlayer, thisButton);
-                    }
-                    else {
-                        thisPlayer.sprites[thisButton].clearTint();
-                    }
+        // Player 1 checks for button numbers using the player's 'buttons' object
+        for (let thisButton in this.player1.buttons) {
+            if (typeof this.player1.sprites[thisButton] !== 'undefined') {
+                if (this.player1.buttons[thisButton] > 0) {
+                    this.tintButton(this.player1, thisButton);
+                }
+                else {
+                    this.player1.sprites[thisButton].clearTint();
                 }
             }
         }
 
+        // Player 2 checks for button names using the players 'buttons_mapped' object
+        for (let thisButton in this.player2.buttons_mapped) {
+            if (typeof this.player2.sprites[thisButton] !== 'undefined') {
+                if (this.player2.buttons_mapped[thisButton] > 0) {
+                    this.tintButton(this.player2, thisButton);
+                }
+                else {
+                    this.player2.sprites[thisButton].clearTint();
+                }
+            }
+        }
+
+
         this.player1Text.setText([
-            'Player 1', 'Gamepad: ' + (typeof this.mergedInput.getPlayer(0).gamepad.index === 'undefined' ? 'Press a button to connect' : this.mergedInput.getPlayer(0).gamepad.id),
-            'Directions: ' + JSON.stringify(this.mergedInput.getPlayer(0).direction),
-            'Buttons: ' + JSON.stringify(this.mergedInput.getPlayer(0).buttons),
-            'Interaction: ' + JSON.stringify(this.mergedInput.getPlayer(0).interaction)
+            'Player 1', 'Gamepad: ' + (typeof this.player1.gamepad.index === 'undefined' ? 'Press a button to connect' : this.player1.gamepad.id),
+            'Directions: ' + JSON.stringify(this.player1.direction),
+            'Buttons: ' + JSON.stringify(this.player1.buttons),
+            'Interaction: ' + JSON.stringify(this.player1.interaction)
         ]);
         this.player2Text.setText([
-            'Player 2', 'Gamepad: ' + (typeof this.mergedInput.getPlayer(1).gamepad.index === 'undefined' ? 'Press a button to connect' : this.mergedInput.getPlayer(1).gamepad.id),
-            'Directions: ' + JSON.stringify(this.mergedInput.getPlayer(1).direction),
-            'Buttons: ' + JSON.stringify(this.mergedInput.getPlayer(1).buttons),
-            'Interaction: ' + JSON.stringify(this.mergedInput.getPlayer(1).interaction)
+            'Player 2', 'Gamepad: ' + (typeof this.player2.gamepad.index === 'undefined' ? 'Press a button to connect' : this.player2.gamepad.id),
+            'Directions: ' + JSON.stringify(this.player2.direction),
+            'Buttons: ' + JSON.stringify(this.player2.buttons),
+            'Interaction: ' + JSON.stringify(this.player2.interaction)
         ]);
 
-        // this.player2Text.setText(JSON.stringify(this.mergedInput.debug().players, null, "\t"));
 
+        // this.debugView.value = this.inputController.mergedInput.debug().input;
     }
 
     tintButton(player, button){
