@@ -199,11 +199,11 @@ Fixed missing code caused by bad merge!
 Added keywords  
 Clean up readme.md  
 
-v1.4.0 - 2022-07-03
-Added normalisation of gamepad devices, using mapping files located in the new `configs` folder.
-Added friendly mapped button names, and a new batch of properties under `interaction_mapped` and `buttons_mapped`.
-Added fake DPad functionality to better handle joypads that map their DPads to the left axis, instead of the standard buttons 12-15.
-Added a debug scene to the demo.
+v1.4.0 - 2022-07-03  
+Added normalisation of gamepad devices, using mapping files located in the new `configs` folder.  
+Added friendly mapped button names, and a new batch of properties under `interaction_mapped` and `buttons_mapped`.  
+Added fake DPad functionality to better handle joypads that map their DPads to the left axis, instead of the standard buttons 12-15.  
+Added a debug scene to the demo.  
 
 
 ## Credits
