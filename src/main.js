@@ -673,7 +673,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * @param {*} pointer - The pointer object
 	 */
 	pointerMove(pointer, threshold) {
-		var threshold = threshold || 0;
+		threshold = threshold || 0;
 		if (pointer.distance > threshold) {
 			let pointerDirection = this.getBearingFromAngle(pointer.angle, 8);
 
@@ -766,7 +766,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * @param {number} numDirections - Number of possible directions (e.g. 4 for N/S/E/W)
 	 */
 	getBearingFromAngle(angle, numDirections) {
-		var numDirections = numDirections || 8;
+		numDirections = numDirections || 8;
 
 		var snap_interval = Phaser.Math.PI2 / numDirections;
 
