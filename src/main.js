@@ -291,8 +291,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * Iterate through players and check for interaction with defined keys
 	 */
 	checkKeyboardInput() {
-		// Loop through players and check for keypresses - use of 'entries()' gives us an index to use for the player
-		for (let [playerIndex, thisPlayer] of this.players.entries()) {
+		// Loop through players and check for keypresses
+		for (let thisPlayer in this.players) {
 			// Loop through all the keys assigned to this player
 			for (var thisKey in thisPlayer.keys) {
 				let action = 0;
@@ -414,8 +414,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * Iterate through players and check for interaction with defined pointer buttons
 	 */
 	checkPointerInput() {
-		// Loop through players and check for button presses - use of 'entries()' gives us an index to use for the player
-		for (let [playerIndex, thisPlayer] of this.players.entries()) {
+		// Loop through players and check for button presses
+		for (let thisPlayer in this.players.entries()) {
 			// Loop through all the keys assigned to this player
 			for (var thisKey in thisPlayer.keys) {
 				for (var thisValue of thisPlayer.keys[thisKey]) { // Each definition for this key action
@@ -673,16 +673,15 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * @param {*} pointer - The pointer object
 	 */
 	pointerMove(pointer, threshold) {
-		var threshold = threshold || 0;
+		threshold = threshold || 0;
 		if (pointer.distance > threshold) {
 			let pointerDirection = this.getBearingFromAngle(pointer.angle, 8);
-			// this.players[0].direction_secondary = this.mapBearingToDirections(pointerDirection);
 
 			// If we've been given a player position, return bearings and angles
 			if (typeof this.players[0] !== 'undefined' && this.players[0].position.x !== 'undefined') {
 				let position = this.players[0].position;
 				let angleToPointer = Phaser.Math.Angle.Between(position.x, position.y, pointer.worldX, pointer.worldY);
-				let pointerDirection = this.getBearingFromAngle(angleToPointer, 8);
+				pointerDirection = this.getBearingFromAngle(angleToPointer, 8);
 				let pointerAngle = Number(this.mapBearingToDegrees(pointerDirection));
 
 				this.players[0].pointer.BEARING = pointerDirection;
@@ -766,8 +765,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * @param {float} angle - Angle to use
 	 * @param {number} numDirections - Number of possible directions (e.g. 4 for N/S/E/W)
 	 */
-	getBearingFromAngle(angle, numDirections, threshold) {
-		var numDirections = numDirections || 8;
+	getBearingFromAngle(angle, numDirections) {
+		numDirections = numDirections || 8;
 
 		var snap_interval = Phaser.Math.PI2 / numDirections;
 

@@ -629,95 +629,72 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 	}, {
 		key: 'checkKeyboardInput',
 		value: function checkKeyboardInput() {
-			// Loop through players and check for keypresses - use of 'entries()' gives us an index to use for the player
-			var _iteratorNormalCompletion9 = true;
-			var _didIteratorError9 = false;
-			var _iteratorError9 = undefined;
+			// Loop through players and check for keypresses
+			for (var thisPlayer in this.players) {
+				// Loop through all the keys assigned to this player
+				for (var thisKey in thisPlayer.keys) {
+					var action = 0;
+					var _iteratorNormalCompletion9 = true;
+					var _didIteratorError9 = false;
+					var _iteratorError9 = undefined;
 
-			try {
-				for (var _iterator9 = this.players.entries()[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-					var _step9$value = _slicedToArray(_step9.value, 2),
-					    playerIndex = _step9$value[0],
-					    thisPlayer = _step9$value[1];
+					try {
+						for (var _iterator9 = thisPlayer.keys[thisKey][Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+							var thisValue = _step9.value;
 
-					// Loop through all the keys assigned to this player
-					for (var thisKey in thisPlayer.keys) {
-						var action = 0;
-						var _iteratorNormalCompletion10 = true;
-						var _didIteratorError10 = false;
-						var _iteratorError10 = undefined;
+							// Check if the key is down
+							action = this.keys[thisValue].isDown ? 1 : action;
+						}
 
+						// Set the action in the player object
+
+						// Dpad
+					} catch (err) {
+						_didIteratorError9 = true;
+						_iteratorError9 = err;
+					} finally {
 						try {
-							for (var _iterator10 = thisPlayer.keys[thisKey][Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-								var thisValue = _step10.value;
-
-								// Check if the key is down
-								action = this.keys[thisValue].isDown ? 1 : action;
+							if (!_iteratorNormalCompletion9 && _iterator9.return) {
+								_iterator9.return();
 							}
-
-							// Set the action in the player object
-
-							// Dpad
-						} catch (err) {
-							_didIteratorError10 = true;
-							_iteratorError10 = err;
 						} finally {
-							try {
-								if (!_iteratorNormalCompletion10 && _iterator10.return) {
-									_iterator10.return();
-								}
-							} finally {
-								if (_didIteratorError10) {
-									throw _iteratorError10;
-								}
+							if (_didIteratorError9) {
+								throw _iteratorError9;
 							}
 						}
+					}
 
-						if (['UP', 'DOWN', 'LEFT', 'RIGHT'].includes(thisKey)) {
-							thisPlayer.direction[thisKey] = action;
-							thisPlayer.direction.TIMESTAMP = this.scene.sys.time.now;
+					if (['UP', 'DOWN', 'LEFT', 'RIGHT'].includes(thisKey)) {
+						thisPlayer.direction[thisKey] = action;
+						thisPlayer.direction.TIMESTAMP = this.scene.sys.time.now;
+					}
+					// Alternative direction
+					else if (['ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT'].includes(thisKey)) {
+							thisPlayer.direction_secondary[thisKey.replace('ALT_', '')] = action;
+							if (action == 1) {
+								thisPlayer.direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+							}
 						}
-						// Alternative direction
-						else if (['ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT'].includes(thisKey)) {
-								thisPlayer.direction_secondary[thisKey.replace('ALT_', '')] = action;
+						// Friendly button names
+						else if (thisKey in thisPlayer.gamepadMapping) {
+								// Get the button number from the gamepad mapping
+								thisPlayer.buttons['B' + thisPlayer.gamepadMapping[thisKey]] = action;
+								thisPlayer.buttons_mapped[thisKey] = action;
 								if (action == 1) {
-									thisPlayer.direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+									thisPlayer.buttons.TIMESTAMP = this.scene.sys.time.now;
 								}
 							}
-							// Friendly button names
-							else if (thisKey in thisPlayer.gamepadMapping) {
-									// Get the button number from the gamepad mapping
-									thisPlayer.buttons['B' + thisPlayer.gamepadMapping[thisKey]] = action;
-									thisPlayer.buttons_mapped[thisKey] = action;
+							// Numbered buttons
+							else {
+									thisPlayer.buttons[thisKey] = action;
 									if (action == 1) {
 										thisPlayer.buttons.TIMESTAMP = this.scene.sys.time.now;
 									}
 								}
-								// Numbered buttons
-								else {
-										thisPlayer.buttons[thisKey] = action;
-										if (action == 1) {
-											thisPlayer.buttons.TIMESTAMP = this.scene.sys.time.now;
-										}
-									}
 
-						// Set the latest interaction flag
-						if (action == 1) {
-							thisPlayer.interaction.device = 'keyboard';
-						}
-					}
-				}
-			} catch (err) {
-				_didIteratorError9 = true;
-				_iteratorError9 = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion9 && _iterator9.return) {
-						_iterator9.return();
-					}
-				} finally {
-					if (_didIteratorError9) {
-						throw _iteratorError9;
+					// Set the latest interaction flag
+					if (action == 1) {
+						thisPlayer.interaction.device = 'keyboard';
 					}
 				}
 			}
@@ -809,61 +786,38 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 	}, {
 		key: 'checkPointerInput',
 		value: function checkPointerInput() {
-			// Loop through players and check for button presses - use of 'entries()' gives us an index to use for the player
-			var _iteratorNormalCompletion11 = true;
-			var _didIteratorError11 = false;
-			var _iteratorError11 = undefined;
+			// Loop through players and check for button presses
+			for (var thisPlayer in this.players.entries()) {
+				// Loop through all the keys assigned to this player
+				for (var thisKey in thisPlayer.keys) {
+					var _iteratorNormalCompletion10 = true;
+					var _didIteratorError10 = false;
+					var _iteratorError10 = undefined;
 
-			try {
-				for (var _iterator11 = this.players.entries()[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-					var _step11$value = _slicedToArray(_step11.value, 2),
-					    playerIndex = _step11$value[0],
-					    thisPlayer = _step11$value[1];
-
-					// Loop through all the keys assigned to this player
-					for (var thisKey in thisPlayer.keys) {
-						var _iteratorNormalCompletion12 = true;
-						var _didIteratorError12 = false;
-						var _iteratorError12 = undefined;
-
-						try {
-							for (var _iterator12 = thisPlayer.keys[thisKey][Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-								var thisValue = _step12.value;
-								// Each definition for this key action
-								if (['M1', 'M2', 'M3', 'M4', 'M5'].includes(thisValue[0])) {
-									// Check to see if button is pressed (stored in P1, can't have two mice...)
-									if (this.players[0].pointer[thisValue] == 1) {
-										thisPlayer.buttons[thisKey] = 1;
-									}
-								}
-							}
-						} catch (err) {
-							_didIteratorError12 = true;
-							_iteratorError12 = err;
-						} finally {
-							try {
-								if (!_iteratorNormalCompletion12 && _iterator12.return) {
-									_iterator12.return();
-								}
-							} finally {
-								if (_didIteratorError12) {
-									throw _iteratorError12;
+					try {
+						for (var _iterator10 = thisPlayer.keys[thisKey][Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+							var thisValue = _step10.value;
+							// Each definition for this key action
+							if (['M1', 'M2', 'M3', 'M4', 'M5'].includes(thisValue[0])) {
+								// Check to see if button is pressed (stored in P1, can't have two mice...)
+								if (this.players[0].pointer[thisValue] == 1) {
+									thisPlayer.buttons[thisKey] = 1;
 								}
 							}
 						}
-					}
-				}
-			} catch (err) {
-				_didIteratorError11 = true;
-				_iteratorError11 = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion11 && _iterator11.return) {
-						_iterator11.return();
-					}
-				} finally {
-					if (_didIteratorError11) {
-						throw _iteratorError11;
+					} catch (err) {
+						_didIteratorError10 = true;
+						_iteratorError10 = err;
+					} finally {
+						try {
+							if (!_iteratorNormalCompletion10 && _iterator10.return) {
+								_iterator10.return();
+							}
+						} finally {
+							if (_didIteratorError10) {
+								throw _iteratorError10;
+							}
+						}
 					}
 				}
 			}
@@ -1017,13 +971,13 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 		key: 'checkGamepadInput',
 		value: function checkGamepadInput() {
 			// Check for gamepad input
-			var _iteratorNormalCompletion13 = true;
-			var _didIteratorError13 = false;
-			var _iteratorError13 = undefined;
+			var _iteratorNormalCompletion11 = true;
+			var _didIteratorError11 = false;
+			var _iteratorError11 = undefined;
 
 			try {
-				for (var _iterator13 = this.gamepads[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
-					var thisGamepad = _step13.value;
+				for (var _iterator11 = this.gamepads[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+					var thisGamepad = _step11.value;
 
 
 					// Set up a player if we don't have one, presumably due to race conditions in detecting gamepads
@@ -1120,16 +1074,16 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 					}
 				}
 			} catch (err) {
-				_didIteratorError13 = true;
-				_iteratorError13 = err;
+				_didIteratorError11 = true;
+				_iteratorError11 = err;
 			} finally {
 				try {
-					if (!_iteratorNormalCompletion13 && _iterator13.return) {
-						_iterator13.return();
+					if (!_iteratorNormalCompletion11 && _iterator11.return) {
+						_iterator11.return();
 					}
 				} finally {
-					if (_didIteratorError13) {
-						throw _iteratorError13;
+					if (_didIteratorError11) {
+						throw _iteratorError11;
 					}
 				}
 			}
@@ -1143,19 +1097,18 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 	}, {
 		key: 'pointerMove',
 		value: function pointerMove(pointer, threshold) {
-			var threshold = threshold || 0;
+			threshold = threshold || 0;
 			if (pointer.distance > threshold) {
 				var pointerDirection = this.getBearingFromAngle(pointer.angle, 8);
-				// this.players[0].direction_secondary = this.mapBearingToDirections(pointerDirection);
 
 				// If we've been given a player position, return bearings and angles
 				if (typeof this.players[0] !== 'undefined' && this.players[0].position.x !== 'undefined') {
 					var position = this.players[0].position;
 					var angleToPointer = Phaser.Math.Angle.Between(position.x, position.y, pointer.worldX, pointer.worldY);
-					var _pointerDirection = this.getBearingFromAngle(angleToPointer, 8);
-					var pointerAngle = Number(this.mapBearingToDegrees(_pointerDirection));
+					pointerDirection = this.getBearingFromAngle(angleToPointer, 8);
+					var pointerAngle = Number(this.mapBearingToDegrees(pointerDirection));
 
-					this.players[0].pointer.BEARING = _pointerDirection;
+					this.players[0].pointer.BEARING = pointerDirection;
 					this.players[0].pointer.ANGLE = angleToPointer;
 					this.players[0].pointer.BEARING_DEGREES = pointerAngle;
 					this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
@@ -1242,8 +1195,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 	}, {
 		key: 'getBearingFromAngle',
-		value: function getBearingFromAngle(angle, numDirections, threshold) {
-			var numDirections = numDirections || 8;
+		value: function getBearingFromAngle(angle, numDirections) {
+			numDirections = numDirections || 8;
 
 			var snap_interval = Phaser.Math.PI2 / numDirections;
 
@@ -1384,15 +1337,15 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 			}
 
 			debug.players = [];
-			var _iteratorNormalCompletion14 = true;
-			var _didIteratorError14 = false;
-			var _iteratorError14 = undefined;
+			var _iteratorNormalCompletion12 = true;
+			var _didIteratorError12 = false;
+			var _iteratorError12 = undefined;
 
 			try {
-				for (var _iterator14 = this.players[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+				for (var _iterator12 = this.players[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
 					var _debug$players$push;
 
-					var thisPlayer = _step14.value;
+					var thisPlayer = _step12.value;
 
 					debug.players.push((_debug$players$push = {
 						'interaction': thisPlayer.interaction,
@@ -1403,16 +1356,16 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 					}, _defineProperty(_debug$players$push, 'interaction_mapped', thisPlayer.interaction_mapped), _defineProperty(_debug$players$push, 'pointer', thisPlayer.pointer), _defineProperty(_debug$players$push, 'direction', thisPlayer.direction), _defineProperty(_debug$players$push, 'direction_secondary', thisPlayer.direction_secondary), _defineProperty(_debug$players$push, 'keys', thisPlayer.keys), _debug$players$push));
 				}
 			} catch (err) {
-				_didIteratorError14 = true;
-				_iteratorError14 = err;
+				_didIteratorError12 = true;
+				_iteratorError12 = err;
 			} finally {
 				try {
-					if (!_iteratorNormalCompletion14 && _iterator14.return) {
-						_iterator14.return();
+					if (!_iteratorNormalCompletion12 && _iterator12.return) {
+						_iterator12.return();
 					}
 				} finally {
-					if (_didIteratorError14) {
-						throw _iteratorError14;
+					if (_didIteratorError12) {
+						throw _iteratorError12;
 					}
 				}
 			}
