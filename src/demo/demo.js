@@ -152,7 +152,6 @@ export default class Demo extends Phaser.Scene {
     }
 
     tintButton(player, button){
-        console.log(player.sprites[button])
         player.sprites[button].setTint(0xff0000);
     }
 

@@ -231,12 +231,6 @@ The keys struct contains arrays of keyboard characters or mouse buttons that wil
 <dt><a href="#defineKey">defineKey(player, action, value, append)</a></dt>
 <dd><p>Define a key for a player/action combination</p>
 </dd>
-<dt><a href="#checkKeyboardInput">checkKeyboardInput()</a></dt>
-<dd><p>Iterate through players and check for interaction with defined keys</p>
-</dd>
-<dt><a href="#checkGamepadInput">checkGamepadInput()</a></dt>
-<dd><p>Iterate through gamepads and handle interactions</p>
-</dd>
 </dl>
 
 <a name="addPlayer"></a>

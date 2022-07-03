@@ -292,7 +292,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 */
 	checkKeyboardInput() {
 		// Loop through players and check for keypresses
-		for (let thisPlayer in this.players) {
+		for (let thisPlayer of this.players) {
 			// Loop through all the keys assigned to this player
 			for (var thisKey in thisPlayer.keys) {
 				let action = 0;
@@ -415,7 +415,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 */
 	checkPointerInput() {
 		// Loop through players and check for button presses
-		for (let thisPlayer in this.players.entries()) {
+		for (let thisPlayer of this.players) {
 			// Loop through all the keys assigned to this player
 			for (var thisKey in thisPlayer.keys) {
 				for (var thisValue of thisPlayer.keys[thisKey]) { // Each definition for this key action
@@ -673,7 +673,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * @param {*} pointer - The pointer object
 	 */
 	pointerMove(pointer, threshold) {
-		threshold = threshold || 0;
+		var threshold = threshold || 0;
 		if (pointer.distance > threshold) {
 			let pointerDirection = this.getBearingFromAngle(pointer.angle, 8);
 
@@ -766,7 +766,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * @param {number} numDirections - Number of possible directions (e.g. 4 for N/S/E/W)
 	 */
 	getBearingFromAngle(angle, numDirections) {
-		numDirections = numDirections || 8;
+		var numDirections = numDirections || 8;
 
 		var snap_interval = Phaser.Math.PI2 / numDirections;
 
