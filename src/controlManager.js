@@ -1,6 +1,7 @@
 import pad_generic from './configs/pad_generic'
 import pad_unlicensedSNES from './configs/pad_unlicensedSNES'
 import pad_xbox360 from './configs/pad_xbox360'
+import pad_dualshock from './configs/pad_dualshock'
 
 export default class controlManager {
     constructor (){
@@ -15,6 +16,9 @@ export default class controlManager {
         }
         else if (id.includes('xbox') && id.includes('360')) {
             padConfig = pad_xbox360;
+        }
+        else if (id.includes('054c')) {
+            padConfig = pad_dualshock;
         }
         else {
             

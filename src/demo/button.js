@@ -4,7 +4,7 @@
      * 
      * @constructor
      * @param {object} config - The configuration for the object
-     * @param {Phaser.Scene} config.scene - The scene on which to add the range selector
+     * @param {Phaser.Scene} config.scene - The scene on which to add the button
      * @param {number} config.x - The horizontal coordinate relative to the scene viewport
      * @param {number} config.y - The vertical coordinate relative to the scene viewport
      * @param {number} config.text - Text to sit inside the button
