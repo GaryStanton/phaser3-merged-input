@@ -1491,6 +1491,10 @@ var _pad_xbox = __webpack_require__(5);
 
 var _pad_xbox2 = _interopRequireDefault(_pad_xbox);
 
+var _pad_dualshock = __webpack_require__(6);
+
+var _pad_dualshock2 = _interopRequireDefault(_pad_dualshock);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1510,6 +1514,8 @@ var controlManager = function () {
                 padConfig = _pad_unlicensedSNES2.default;
             } else if (id.includes('xbox') && id.includes('360')) {
                 padConfig = _pad_xbox2.default;
+            } else if (id.includes('054c')) {
+                padConfig = _pad_dualshock2.default;
             } else {}
 
             return padConfig;
@@ -1745,6 +1751,41 @@ module.exports = {
         LC_W: 14,
         LC_E: 15,
         MENU: 16
+    }
+};
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/**
+ * Dualshock mapping
+ */
+module.exports = {
+    padID: 'Dualshock',
+    padType: 'Sony',
+    gamepadMapping: {
+        RC_S: 0,
+        RC_E: 1,
+        RC_W: 2,
+        RC_N: 3,
+        START: 9, // Options
+        SELECT: 8, // Share
+        LB: 4,
+        RB: 5,
+        LT: 6,
+        RT: 7,
+        LS: 10,
+        RS: 11,
+        LC_N: 12,
+        LC_S: 13,
+        LC_W: 14,
+        LC_E: 15,
+        MENU: 16,
+        TOUCH: 17
     }
 };
 
