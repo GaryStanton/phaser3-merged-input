@@ -172,9 +172,15 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 	_createClass(MergedInput, [{
 		key: 'boot',
 		value: function boot() {
+			var _this2 = this;
+
 			this.eventEmitter = this.systems.events;
 			this.eventEmitter.on('preupdate', this.preupdate, this);
 			this.eventEmitter.on('postupdate', this.postupdate, this);
+			// Handle the game losing focus
+			this.game.events.on(Phaser.Core.Events.BLUR, function () {
+				_this2.loseFocus();
+			});
 
 			// Gamepad
 			if (typeof this.systems.input.gamepad !== 'undefined') {
@@ -336,6 +342,20 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 			thisPlayer.internal.fakedpadPressed = '';
 			thisPlayer.internal.fakedpadReleased = '';
+		}
+
+		/**
+   * Function to run when the game loses focus
+   * We want to fake releasing the buttons here, so that they're not stuck down without an off event when focus returns to the game
+   */
+
+	}, {
+		key: 'loseFocus',
+		value: function loseFocus() {
+			// Loop through defined keys and reset them
+			for (var thisKey in this.keys) {
+				this.keys[thisKey].reset();
+			}
 		}
 
 		/**
@@ -1325,11 +1345,11 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 	}, {
 		key: 'mapBearingToDegrees',
 		value: function mapBearingToDegrees(bearing) {
-			var _this2 = this;
+			var _this3 = this;
 
 			if (bearing != '') {
 				return Object.keys(this.bearings).find(function (key) {
-					return _this2.bearings[key] === bearing;
+					return _this3.bearings[key] === bearing;
 				});
 			} else {
 				return '';

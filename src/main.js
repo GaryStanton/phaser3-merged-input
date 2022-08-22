@@ -38,6 +38,10 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		this.eventEmitter = this.systems.events;
 		this.eventEmitter.on('preupdate', this.preupdate, this);
 		this.eventEmitter.on('postupdate', this.postupdate, this);
+		// Handle the game losing focus
+		this.game.events.on(Phaser.Core.Events.BLUR, () => {
+			this.loseFocus()
+		})
 
 		// Gamepad
 		if (typeof this.systems.input.gamepad !== 'undefined') {
@@ -133,6 +137,17 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 		thisPlayer.internal.fakedpadPressed = '';
 		thisPlayer.internal.fakedpadReleased = '';
+	}
+
+	/**
+	 * Function to run when the game loses focus
+	 * We want to fake releasing the buttons here, so that they're not stuck down without an off event when focus returns to the game
+	 */
+	loseFocus() {
+		// Loop through defined keys and reset them
+		for (let thisKey in this.keys) {
+			this.keys[thisKey].reset();
+		}
 	}
 
 	/**

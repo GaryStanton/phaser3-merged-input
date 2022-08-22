@@ -205,6 +205,9 @@ Added friendly mapped button names, and a new batch of properties under `interac
 Added fake DPad functionality to better handle joypads that map their DPads to the left axis, instead of the standard buttons 12-15.  
 Added a debug scene to the demo.  
 
+v1.4.1 - 2022-08-22
+When the game loses focus, the plugin will now reset each of the defined keys to avoid them getting stuck when returning to the game.
+
 
 ## Credits
 Written by [Gary Stanton](https://garystanton.co.uk)  
