@@ -122,27 +122,32 @@ Then, interrogate your player objects to check for the state of the _action_, ra
     }
 
     if(player1.buttons_mapped.START > 0) {
-        // Player one is pressing what the plugin considers to be the 'start' button - depending on the controller config
+        // Player one is pressing what the plugin considers to be the 'start' button - depending on the controller config.
     }
 
     if(player1.interaction.device == 'gamepad') {
-        // Player one is using a gamepad, you may wish to update your prompts accordingly
+        // Player one is using a gamepad, you may wish to update your prompts accordingly.
     }
 
-    if (['B8', 'B9', 'B0'].includes(player1.interaction.pressed)) {
-        // Player one has just pressed one of the following buttons - B8, B9 or B0
-        // The 'pressed' interaction flag differs from interrogating the buttons directly. It will contain the button pressed for a single update tick, as it happens.
+    if (['B8', 'B9', 'B0'].filter(x => player1.interaction.pressed.includes(x)).length) {
+        // Player one has just pressed one of the following buttons - B8, B9 or B0.
+        // The 'pressed' interaction flag differs from interrogating the buttons directly. It will contain the button(s) pressed for a single update tick, as it happens.
+        // Here we're comparing an array of button names to the array of buttons pressed in the step.
     }
 
-    if (['RC_S', 'LC_E'].includes(player1.interaction.pressed)) {
-        // Player one has just pressed one of the following buttons - Right cluster: South or Left cluster (DPad): East
+    // NEW in v1.6.0
+    if (player1.interaction.isPressed(['RC_S', 'LC_E'])) {
+        // Player one has just pressed one of the following buttons - Right cluster: South or Left cluster (DPad): East.
+        // Instead of comparing arrays directly as above, we're using the included helper function here, which will return any matching buttons that were pressed in this update step.
     }
 ```
 
 ## Demo / Dev
 A demo scene is included in the repository.  
-The demo has been updated to incorporate the mapped buttons and interactions included in v1.4.0
+The demo has been updated to incorporate the mapped buttons and interactions included in v1.4.0 and the helper functions added in v1.6.0  
+
 ![](src/demo/merged-input-demo.gif)  
+
 Install with `npm install`, then use `npm run dev` to spin up a development server and run the demo scene.
 
 
@@ -151,40 +156,26 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
-v1.1.0 - 2020-04-19  
-Plugin now handles secondary directional movement from the second stick on a gamepad.
-Bearings and degrees have been added to direction objects.
+v1.6.0 - 2022-12-05
+Improved handling of the 'pressed' and 'released' events. Previously it was possible to miss a press event if two happened within the same update step.  
+**IMPORTANT:** The `pressed` & `released` properties under the player's `interaction` object has changed from a string to an array, to allow for multiple values in an update step.  
+Any code that checks these properties should be updated to expect an array of one or more values.
+New helper functions `isPressed()` and `isReleased()` have been added to the `interaction` and `interaction_mapped` properties of the player object.
+Use these to check if one or more buttons were pressed/released in the current update step. See the demo for more details.
 
-v1.2.0 - 2020-04-27  
-You are now able to pass a player's X/Y position to a player object, whereupon the position of the mouse in relation to that player will be used to determine mouse bearings and degrees
+v1.5.0 - 2022-08-22
+When the game loses focus, the plugin will now reset each of the defined keys to avoid them getting stuck when returning to the game.
 
-v1.2.1 - 2020-04-27  
-Actually added the build files.
+v1.4.0 - 2022-07-03  
+Added normalisation of gamepad devices, using mapping files located in the new `configs` folder.  
+Added friendly mapped button names, and a new batch of properties under `interaction_mapped` and `buttons_mapped`.  
+Added fake DPad functionality to better handle joypads that map their DPads to the left axis, instead of the standard buttons 12-15.  
+Added a debug scene to the demo.  
 
-v1.2.2 - 2020-05-03   
-Added secondary direction key detection, so that secondary directions may be instigated through a keypress as well as the right stick of a gamepad.
-Added timestamps to interactions making it possible to tell which was last used, e.g. keyboard vs mouse.
-
-v1.2.3 - 2020-05-08  
-Added extra handling for 'null' gamepads.
-
-v1.2.4 - 2020-05-08  
-And again, remembering to include the built files would be a bonus.
-
-v1.2.5 - 2021-05-04  
-Updated buttondown and buttonup event listeners from per pad, to per input system.
-It seems the per pad listeners weren't firing for pad 2 and this method works around the problem.
-Also added an addPlayer call if the corresponding player is missing.
-Updated phaser dependancy
-
-v1.2.6 - 2021-05-04  
-Guess who forgot to build again??
-
-v1.2.7 - 2021-07-06  
-Changed the order of buffer/pressed checking in update loop.
-
-v1.2.8 - 2021-07-23  
-Added gamepad directions to interaction buffer/presses to match keyboard interactions.
+v1.3.1 - 2022-03-11  
+Fixed missing code caused by bad merge!  
+Added keywords  
+Clean up readme.md  
 
 v1.3.0 - 2022-03-10  
 Migrated keyboard interaction flags from the `justDown` and `justUp` key functions, to instead use the keyboard's `keyDown` and `keyUp` events.  
@@ -194,19 +185,40 @@ Added a new `lastPressed` and `lastReleased` key, to replace the existing `press
 Added TypeScript support.  
 With many thanks to @zewa666 and @bbugh for help with this release.  
 
-v1.3.1 - 2022-03-11  
-Fixed missing code caused by bad merge!  
-Added keywords  
-Clean up readme.md  
+v1.2.8 - 2021-07-23  
+Added gamepad directions to interaction buffer/presses to match keyboard interactions.
 
-v1.4.0 - 2022-07-03  
-Added normalisation of gamepad devices, using mapping files located in the new `configs` folder.  
-Added friendly mapped button names, and a new batch of properties under `interaction_mapped` and `buttons_mapped`.  
-Added fake DPad functionality to better handle joypads that map their DPads to the left axis, instead of the standard buttons 12-15.  
-Added a debug scene to the demo.  
+v1.2.7 - 2021-07-06  
+Changed the order of buffer/pressed checking in update loop.
 
-v1.5.0 - 2022-08-22
-When the game loses focus, the plugin will now reset each of the defined keys to avoid them getting stuck when returning to the game.
+v1.2.6 - 2021-05-04  
+Guess who forgot to build again??
+
+v1.2.5 - 2021-05-04  
+Updated buttondown and buttonup event listeners from per pad, to per input system.
+It seems the per pad listeners weren't firing for pad 2 and this method works around the problem.
+Also added an addPlayer call if the corresponding player is missing.
+Updated phaser dependancy
+
+v1.2.4 - 2020-05-08  
+And again, remembering to include the built files would be a bonus.
+
+v1.2.3 - 2020-05-08  
+Added extra handling for 'null' gamepads.
+
+v1.2.2 - 2020-05-03   
+Added secondary direction key detection, so that secondary directions may be instigated through a keypress as well as the right stick of a gamepad.
+Added timestamps to interactions making it possible to tell which was last used, e.g. keyboard vs mouse.
+
+v1.2.0 - 2020-04-27  
+You are now able to pass a player's X/Y position to a player object, whereupon the position of the mouse in relation to that player will be used to determine mouse bearings and degrees
+
+v1.2.1 - 2020-04-27  
+Actually added the build files.
+
+v1.1.0 - 2020-04-19  
+Plugin now handles secondary directional movement from the second stick on a gamepad.
+Bearings and degrees have been added to direction objects.
 
 
 ## Credits
@@ -234,6 +246,12 @@ The keys struct contains arrays of keyboard characters or mouse buttons that wil
 <dt><a href="#defineKey">defineKey(player, action, value, append)</a></dt>
 <dd><p>Define a key for a player/action combination</p>
 </dd>
+<dt><a href="#isPressed">{player}.interaction.isPressed(button)</a></dt>
+<dd><p>Pass one or more button names to check whether one or more buttons were pressed during an update tick.</p>
+</dd>
+<dt><a href="#isReleased">{player}.interaction.isPressed(button)</a></dt>
+<dd><p>Pass one or more button names to check whether one or more buttons were released during an update tick.</p>
+</dd>
 </dl>
 
 <a name="addPlayer"></a>
@@ -251,42 +269,37 @@ Add a new player object to the players array
 ## getPlayer(index)
 Get player object
 
-
-
 | Param | Type |
 | --- | --- |
 | thisPlayer | <code>number</code> | 
-
-<a name="setupControls"></a>
-
-## setupControls()
-Returns a struct to hold input control information
-Set up a struct for each player in the game
-Direction and Buttons contain the input from the devices
-The keys struct contains arrays of keyboard characters that will trigger the action
 
 
 <a name="defineKey"></a>
 
 ## defineKey(player, action, value, append)
 Define a key for a player/action combination
+| Param | Type | |
+| --- | --- | --- |
+| player | <code>number</code> | The player on which we're defining a key |
+| action | <code>string</code> | The action to define |
+| value | <code>string</code> | The key to use |
+| append | <code>boolean</code> | When true, this key definition will be appended to the existing key(s) for this action |
+
+<a name="isPressed"></a>
+
+## {player}.interaction.isPressed(button)
+Check if button(s) were pressed during an update tick
+
+| Param | Type |
+| --- | --- |
+| button | <code>string/array</code> | 
 
 
+<a name="isReleased"></a>
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| player | <code>number</code> | <code>0</code> | The player on which we're defining a key |
-| action | <code>string</code> |  | The action to define |
-| value | <code>string</code> |  | The key to use |
-| append | <code>boolean</code> | <code>false</code> | When true, this key definition will be appended to the existing key(s) for this action |
+## {player}.interaction.isReleased(button)
+Check if button(s) were released during an update tick
 
-<a name="checkKeyboardInput"></a>
-
-## checkKeyboardInput()
-Iterate through players and check for interaction with defined keys
-
-
-<a name="checkGamepadInput"></a>
-
-## checkGamepadInput()
-Iterate through gamepads and handle interactions
+| Param | Type |
+| --- | --- |
+| button | <code>string/array</code> | 

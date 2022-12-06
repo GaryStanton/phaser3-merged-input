@@ -61,10 +61,10 @@ declare module 'phaser3-merged-input' {
 
     'position': {};
     'interaction': {
-      buffer: string;
+      buffer: string[];
       device: string;
-      pressed: string;
-	    released: string;
+      pressed: string[];
+	    released: string[];
 	    lastPressed: string;
 	    lastReleased: string;
     };
@@ -206,10 +206,10 @@ declare module 'phaser3-merged-input' {
       };
       position: {};
       'interaction': {
-        buffer: string;
+        buffer: string[];
         device: string;
-        pressed: string;
-		    released: string;
+        pressed: string[];
+		    released: string[];
 		    lastPressed: string;
 		    lastReleased: string;
       };

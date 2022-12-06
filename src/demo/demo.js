@@ -89,7 +89,6 @@ export default class Demo extends Phaser.Scene {
     update() {
         // Loop through player objects
         for (let thisPlayer of this.players) {
-
             // Reset dpad frame
             thisPlayer.sprites.dpad.setFrame('XboxOne_Dpad');
 
@@ -121,7 +120,7 @@ export default class Demo extends Phaser.Scene {
             }
 
             // Check the MAPPED button values to correspond with the sprites we created
-            for (let thisButton in this.player2.buttons_mapped) {
+            for (let thisButton in thisPlayer.buttons_mapped) {
                 if (typeof thisPlayer.sprites[thisButton] !== 'undefined') {
                     if (thisPlayer.buttons_mapped[thisButton] > 0) {
                         this.tintButton(thisPlayer, thisButton);
@@ -132,21 +131,27 @@ export default class Demo extends Phaser.Scene {
                 }
             }
         }
-
-
+        
         this.player1Text.setText([
             'Player 1', 'Gamepad: ' + (typeof this.player1.gamepad.index === 'undefined' ? 'Press a button to connect' : this.player1.gamepad.id),
             'Directions: ' + JSON.stringify(this.player1.direction),
             'Buttons: ' + JSON.stringify(this.player1.buttons),
-            'Interaction: ' + JSON.stringify(this.player1.interaction)
+            'Interaction: ' + JSON.stringify(this.player1.interaction),
+            'Internal: ' + JSON.stringify(this.player1.internal)
         ]);
         this.player2Text.setText([
             'Player 2', 'Gamepad: ' + (typeof this.player2.gamepad.index === 'undefined' ? 'Press a button to connect' : this.player2.gamepad.id),
             'Directions: ' + JSON.stringify(this.player2.direction),
             'Buttons: ' + JSON.stringify(this.player2.buttons),
-            'Interaction: ' + JSON.stringify(this.player2.interaction)
+            'Interaction: ' + JSON.stringify(this.player2.interaction),
+            'Internal: ' + JSON.stringify(this.player2.internal)
         ]);
+        
 
+        // Here we check if certain buttons were pressed in this update step.
+        if (this.player1.interaction_mapped.isPressed(['START','RC_S','RC_N'])) {
+            console.log(this.player1.interaction_mapped.isPressed(['START', 'RC_S', 'RC_N'])[0])
+        }
 
         // this.debugView.value = this.inputController.mergedInput.debug().input;
     }
