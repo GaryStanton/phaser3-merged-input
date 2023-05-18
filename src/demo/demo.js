@@ -153,6 +153,10 @@ export default class Demo extends Phaser.Scene {
             console.log(this.player1.interaction_mapped.isPressed(['START', 'RC_S', 'RC_N'])[0])
         }
 
+        // Set a position for the player
+        this.player1.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
+
+
         // this.debugView.value = this.inputController.mergedInput.debug().input;
     }
 

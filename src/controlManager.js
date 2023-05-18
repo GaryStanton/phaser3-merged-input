@@ -82,7 +82,7 @@ export default class controlManager {
                 'ANGLE': 0,
                 'TIMESTAMP': 0
             },
-            'position': {},
+            'position': {x:0,y:0},
             'gamepad': {},
             'keys': {
                 'UP': [],
@@ -152,6 +152,12 @@ export default class controlManager {
             controls.buttons['B' + i] = 0;
             controls.keys['B' + i] = [];
         }
+
+        controls.setPosition = function(x,y) {
+            this.position.x = x;
+            this.position.y = y;
+        }
+        
 
         return controls;
     }
