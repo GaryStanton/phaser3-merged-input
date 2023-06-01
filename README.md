@@ -156,23 +156,23 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
-v1.6.1 - 2023-06-01
+v1.6.1 - 2023-06-01  
 Updated pointer events to only be set when adding the first player.
 Pointer events now check for player object.
 Updated typings
 With many thanks to @Dan-Mizu for help with this release.
 
-v1.6.0 - 2022-12-05
+v1.6.0 - 2022-12-05  
 Improved handling of the 'pressed' and 'released' events. Previously it was possible to miss a press event if two happened within the same update step.  
 **IMPORTANT:** The `pressed` & `released` properties under the player's `interaction` object has changed from a string to an array, to allow for multiple values in an update step.  
 Any code that checks these properties should be updated to expect an array of one or more values.
 New helper functions `isPressed()` and `isReleased()` have been added to the `interaction` and `interaction_mapped` properties of the player object.
 Use these to check if one or more buttons were pressed/released in the current update step. See the demo for more details.
 
-v1.5.0 - 2022-08-22
+v1.5.0 - 2022-08-22  
 When the game loses focus, the plugin will now reset each of the defined keys to avoid them getting stuck when returning to the game.
 
-v1.4.0 - 2022-07-03  
+v1.4.0 - 2022-07-03    
 Added normalisation of gamepad devices, using mapping files located in the new `configs` folder.  
 Added friendly mapped button names, and a new batch of properties under `interaction_mapped` and `buttons_mapped`.  
 Added fake DPad functionality to better handle joypads that map their DPads to the left axis, instead of the standard buttons 12-15.  
