@@ -156,6 +156,12 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
+v1.6.1 - 2023-06-01
+Updated pointer events to only be set when adding the first player.
+Pointer events now check for player object.
+Updated typings
+With many thanks to @Dan-Mizu for help with this release.
+
 v1.6.0 - 2022-12-05
 Improved handling of the 'pressed' and 'released' events. Previously it was possible to miss a press event if two happened within the same update step.  
 **IMPORTANT:** The `pressed` & `released` properties under the player's `interaction` object has changed from a string to an array, to allow for multiple values in an update step.  
