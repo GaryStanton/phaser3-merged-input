@@ -153,6 +153,10 @@ export default class Demo extends Phaser.Scene {
             console.log(this.player1.interaction_mapped.isPressed(['START', 'RC_S', 'RC_N'])[0])
         }
 
+        if (this.player1.interaction.isPressed(['M1', 'M2'])) {
+            console.log(this.player1.interaction.isPressed(['M1', 'M2'])[0])
+        }
+
         // Set a position for the player
         this.player1.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
 
