@@ -13,17 +13,6 @@ declare module "phaser3-merged-input" {
 		| "S"
 		| "SW";
 	export interface Player {
-		sprites: {
-			dpad: Phaser.GameObjects.Image;
-			RC_S: Phaser.GameObjects.Image;
-			RC_E: Phaser.GameObjects.Image;
-			RC_W: Phaser.GameObjects.Image;
-			RC_N: Phaser.GameObjects.Image;
-			LB: Phaser.GameObjects.Image;
-			RB: Phaser.GameObjects.Image;
-			LT: Phaser.GameObjects.Image;
-			RT: Phaser.GameObjects.Image;
-		};
 		direction: {
 			UP: 0 | 1;
 			DOWN: 0 | 1;
