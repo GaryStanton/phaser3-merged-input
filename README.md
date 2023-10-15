@@ -12,6 +12,7 @@ Each player object contains direction and button actions. These are updated by t
 . Assign multiple keys to a single action.  
 . Interrogate current state of all buttons.  
 . Global events emitted on button down/up.  
+· (v1.7.0) Plugin specific events for button/keyboard/mouse presses, as well as device changes  
 . Check for gamepad button presses (i.e. ‘justDown()’ functionality for gamepads)  
 . Check the last device type used for interaction.  
 · (v1.4.0) Button mapping to consistent names such as 'RC_X' for the right cluster of buttons  
@@ -142,6 +143,12 @@ Then, interrogate your player objects to check for the state of the _action_, ra
     }
 ```
 
+### New in v1.7.0
+A new plugin specific eventEmitter instance exists at `mergedInput.events`.
+You may use this across your game to listen for keypresses, button presses and device changes (i.e. moving from using the keyboard to a gamepad).
+
+
+
 ## Demo / Dev
 A demo scene is included in the repository.  
 The demo has been updated to incorporate the mapped buttons and interactions included in v1.4.0 and the helper functions added in v1.6.0  
@@ -156,6 +163,11 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
+v1.7.0 - 2023-10-15
+Added a new plugin specific instance of the event emitter.
+The old 'mergedInput' events continue to fire on the scene's emitter; however as they are all the same event with extra data, you need to listen to all every 'mergedInput' event and filter for the ones you need.
+The new plugin specific instance allows you to listen only to the events you need.
+
 v1.6.1 - 2023-06-01  
 Updated pointer events to only be set when adding the first player.
 Pointer events now check for player object.
@@ -216,11 +228,11 @@ v1.2.2 - 2020-05-03
 Added secondary direction key detection, so that secondary directions may be instigated through a keypress as well as the right stick of a gamepad.
 Added timestamps to interactions making it possible to tell which was last used, e.g. keyboard vs mouse.
 
-v1.2.0 - 2020-04-27  
-You are now able to pass a player's X/Y position to a player object, whereupon the position of the mouse in relation to that player will be used to determine mouse bearings and degrees
-
 v1.2.1 - 2020-04-27  
 Actually added the build files.
+
+v1.2.0 - 2020-04-27  
+You are now able to pass a player's X/Y position to a player object, whereupon the position of the mouse in relation to that player will be used to determine mouse bearings and degrees
 
 v1.1.0 - 2020-04-19  
 Plugin now handles secondary directional movement from the second stick on a gamepad.
@@ -262,7 +274,7 @@ The keys struct contains arrays of keyboard characters or mouse buttons that wil
 
 <a name="addPlayer"></a>
 
-## addPlayer()
+### addPlayer()
 Add a new player object to the players array  
 
 | Param | Type |
@@ -272,7 +284,7 @@ Add a new player object to the players array
 
 <a name="getPlayer"></a>
 
-## getPlayer(index)
+### getPlayer(index)
 Get player object
 
 | Param | Type |
@@ -282,7 +294,7 @@ Get player object
 
 <a name="defineKey"></a>
 
-## defineKey(player, action, value, append)
+### defineKey(player, action, value, append)
 Define a key for a player/action combination
 | Param | Type | |
 | --- | --- | --- |
@@ -293,7 +305,7 @@ Define a key for a player/action combination
 
 <a name="isPressed"></a>
 
-## {player}.interaction.isPressed(button)
+### {player}.interaction.isPressed(button)
 Check if button(s) were pressed during an update tick
 
 | Param | Type |
@@ -303,9 +315,26 @@ Check if button(s) were pressed during an update tick
 
 <a name="isReleased"></a>
 
-## {player}.interaction.isReleased(button)
+### {player}.interaction.isReleased(button)
 Check if button(s) were released during an update tick
 
 | Param | Type |
 | --- | --- |
 | button | <code>string/array</code> | 
+
+
+## Events
+
+| Event | Description | Data |
+| --- | --- | --- |
+| gamepad_connected | Gamepad is connected | gamepad instance |
+| device_changed | The last input device has changed | last device used (keyboard/gamepad/mouse) |
+| keyboard_keydown | Keyboard key pressed | player: player instance, key: keycode pressed |
+| keyboard_keyup | Keyboard key released | player: player instance, key: keycode pressed |
+| gamepad_buttondown | Gamepad button pressed | player: player instance, button: button number pressed |
+| gamepad_buttonup | Gamepad button released | player: player instance, button: button number released |
+| gamepad_directiondown | Gamepad D-Pad pressed | player: player instance, direction: D-Pad direction pressed |
+| gamepad_directionup | Gamepad D-Pad released | player: player instance, direction: D-Pad direction released |
+| gamepad_directionup | Gamepad D-Pad released | player: player instance, direction: D-Pad direction released |
+| pointer_down | Mouse button pressed | button number pressed |
+| pointer_up | Mouse button released | button number released |
