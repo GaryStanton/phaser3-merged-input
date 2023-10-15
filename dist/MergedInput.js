@@ -174,7 +174,11 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 		value: function boot() {
 			var _this2 = this;
 
+			// Scene event emitter
 			this.eventEmitter = this.systems.events;
+			// Plugin event emitter
+			this.events = new Phaser.Events.EventEmitter();
+
 			this.game.events.on(Phaser.Core.Events.PRE_STEP, this.preupdate, this);
 			this.game.events.on(Phaser.Core.Events.POST_STEP, this.postupdate, this);
 			// Handle the game losing focus
@@ -354,6 +358,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 		key: 'setupGamepad',
 		value: function setupGamepad(thisGamepad) {
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', id: thisGamepad.id, player: thisGamepad.index, action: 'Connected' });
+			this.events.emit('gamepad_connected', thisGamepad);
 
 			if (typeof this.players[thisGamepad.index] === 'undefined') {
 				this.addPlayer();
@@ -462,6 +467,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 	}, {
 		key: 'addPlayerHelperFunctions',
 		value: function addPlayerHelperFunctions(player) {
+			var _this3 = this;
+
 			/**
     * Pass a button name, or an array of button names to check if any were pressed in this update step.
     * Returns the name of the matched button(s), in case you need it.
@@ -507,6 +514,16 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 					return player.interaction_mapped.released.includes(x);
 				});
 				return matchedButtons.length ? matchedButtons : false;
+			};
+
+			player.setDevice = function (device) {
+				if (player.interaction.device != device) {
+					_this3.eventEmitter.emit('mergedInput', { device: device, player: player.index, action: 'Device Changed' });
+					_this3.events.emit('device_changed', { player: player.index, device: device });
+				}
+				player.interaction.device = device;
+
+				return _this3;
 			};
 
 			return this;
@@ -791,7 +808,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 						// Set the latest interaction flag
 						if (action == 1) {
-							thisPlayer.interaction.device = 'keyboard';
+							thisPlayer.setDevice('keyboard');
 						}
 					}
 				}
@@ -828,8 +845,9 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 			if (playerIndex > -1 && playerAction != '') {
 				var thisPlayer = this.getPlayer(playerIndex);
 				this.eventEmitter.emit('mergedInput', { device: 'keyboard', value: 1, player: playerIndex, action: keyCode, state: 'DOWN' });
+				this.events.emit('keyboard_keydown', { player: playerIndex, key: keyCode });
 
-				thisPlayer.interaction.device = 'keyboard';
+				thisPlayer.setDevice('keyboard');
 				thisPlayer.interaction.pressed.push(playerAction);
 				thisPlayer.interaction.buffer.push(playerAction);
 				thisPlayer.interaction.last = playerAction;
@@ -869,8 +887,9 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 			if (playerIndex > -1 && playerAction != '') {
 				var thisPlayer = this.getPlayer(playerIndex);
 				this.eventEmitter.emit('mergedInput', { device: 'keyboard', value: 1, player: playerIndex, action: keyCode, state: 'DOWN' });
+				this.events.emit('keyboard_keyup', { player: playerIndex, key: keyCode });
 
-				thisPlayer.interaction.device = 'keyboard';
+				thisPlayer.setDevice('keyboard');
 				thisPlayer.interaction.released.push(playerAction);
 				thisPlayer.interaction.lastReleased = playerAction;
 
@@ -968,9 +987,10 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 	}, {
 		key: 'gamepadButtonDown',
 		value: function gamepadButtonDown(pad, button, value) {
-			this.players[pad.index].interaction.device = 'gamepad';
+			this.players[pad.index].setDevice('gamepad');
 			this.players[pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: value, player: pad.index, action: 'B' + button.index, state: 'DOWN' });
+			this.events.emit('gamepad_buttondown', { player: pad.index, button: 'B' + button.index });
 
 			// Buttons
 			if (![12, 13, 14, 15].includes(button.index)) {
@@ -995,6 +1015,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 						return dpadMapping[key] == button.index;
 					});
 					this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: direction, state: 'DOWN' });
+					this.events.emit('gamepad_directiondown', { player: pad.index, button: direction });
+
 					this.players[pad.index].interaction.pressed.push(direction);
 					this.players[pad.index].interaction.last = direction;
 					this.players[pad.index].interaction.lastPressed = direction;
@@ -1022,10 +1044,11 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 	}, {
 		key: 'gamepadButtonUp',
 		value: function gamepadButtonUp(pad, button, value) {
-			this.players[pad.index].interaction.device = 'gamepad';
+			this.players[pad.index].setDevice('gamepad');
 			this.players[pad.index].buttons.TIMESTAMP = this.scene.sys.time.now;
 
 			this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: value, player: pad.index, action: 'B' + button.index, state: 'UP' });
+			this.events.emit('gamepad_buttonup', { player: pad.index, button: 'B' + button.index });
 
 			// Buttons
 			if (![12, 13, 14, 15].includes(button.index)) {
@@ -1047,6 +1070,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 						return dpadMapping[key] == button.index;
 					});
 					this.eventEmitter.emit('mergedInput', { device: 'gamepad', value: 1, player: pad.index, action: direction, state: 'UP' });
+					this.events.emit('gamepad_directionup', { player: pad.index, button: direction });
+
 					this.players[pad.index].interaction.released.push(direction);
 					this.players[pad.index].interaction.lastReleased = direction;
 
@@ -1290,7 +1315,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 		value: function pointerDown(pointer) {
 			if (this.players.length) {
 				var action = '';
-				this.players[0].interaction.device = 'pointer';
+				this.players[0].setDevice('pointer');
 				if (pointer.leftButtonDown()) {
 					action = 'M1';
 				}
@@ -1308,6 +1333,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				}
 
 				this.eventEmitter.emit('mergedInput', { device: 'pointer', value: 1, player: 0, action: action, state: 'DOWN' });
+				this.events.emit('pointer_down', action);
 
 				this.players[0].pointer[action] = 1;
 
@@ -1347,6 +1373,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				}
 
 				this.eventEmitter.emit('mergedInput', { device: 'pointer', value: 1, player: 0, action: action, state: 'UP' });
+				this.events.emit('pointer_up', action);
 
 				this.players[0].pointer[action] = 0;
 				this.players[0].interaction.released.push(action);
@@ -1451,11 +1478,11 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 	}, {
 		key: 'mapBearingToDegrees',
 		value: function mapBearingToDegrees(bearing) {
-			var _this3 = this;
+			var _this4 = this;
 
 			if (bearing != '') {
 				return Object.keys(this.bearings).find(function (key) {
-					return _this3.bearings[key] === bearing;
+					return _this4.bearings[key] === bearing;
 				});
 			} else {
 				return '';
@@ -1569,7 +1596,7 @@ var bearings = {
     '-56.25': 'NEBN',
     '-45': 'NE',
     '-33.75': 'NEBE',
-    '-22.5': 'EBE',
+    '-22.5': 'ENE',
     '-11.25': 'EBN',
     '0': 'E',
     '11.25': 'EBS',
