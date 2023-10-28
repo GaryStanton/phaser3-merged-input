@@ -52,6 +52,7 @@ export default class controlManager {
                 'TIMESTAMP': 0
             },
             'buttons': {},
+            'timers' : {},
             'gamepadMapping': {
                 RC_S: 0,
                 RC_E: 1,
@@ -152,6 +153,23 @@ export default class controlManager {
             controls.buttons['B' + i] = 0;
             controls.keys['B' + i] = [];
         }
+
+        // Add timers 
+        for (let i = 0; i <= numberOfButtons; i++) {
+            controls.timers['B' + i] = {
+                'pressed': 0,
+                'released': 0,
+                'duration': 0
+            };
+        }
+        for (let thisDirection of ['UP', 'DOWN', 'LEFT', 'RIGHT', 'ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT']) {
+            controls.timers[thisDirection] = {
+                'pressed': 0,
+                'released': 0,
+                'duration': 0
+            };
+        }
+
 
         controls.setPosition = function(x,y) {
             this.position.x = x;

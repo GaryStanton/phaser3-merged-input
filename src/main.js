@@ -230,6 +230,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	addPlayerHelperFunctions(player) {
 		/**
 		 * Pass a button name, or an array of button names to check if any were pressed in this update step.
+		 * This will only fire once per button press. If you need to check for a button being held down, use isDown instead.
 		 * Returns the name of the matched button(s), in case you need it.
 		 */
 		player.interaction.isPressed = (button) => {
@@ -237,6 +238,21 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			let matchedButtons = button.filter(x => player.interaction.pressed.includes(x))
 			return matchedButtons.length ? matchedButtons : false;
 		},
+
+		/**
+		 * Pass a button name, or an array of button names to check if any are currently pressed in this update step.
+		 * This differs from the isPressed function in that it will return true if the button is currently pressed, even if it was pressed in a previous update step.
+		 * Returns the name of the matched button(s), in case you need it.
+		 */
+		player.interaction.isDown = (button) => {
+			button = (typeof button === 'string') ? Array(button) : button;
+			let matchedButtons = button.filter(x => player.buttons[x])
+			let matchedDirections = button.filter(x => player.direction[x])
+			let matchedAll = [...matchedButtons, ...matchedDirections];
+
+			return matchedAll.length ? matchedAll : false;
+		},
+
 		/**
 		 * Pass a button name, or an array of button names to check if any were released in this update step.
 		 * Returns the name of the matched button(s), in case you need it.
@@ -249,11 +265,23 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 		/**
 		 * Pass a mapped button name, or an array of mapped button names to check if any were pressed in this update step.
+		 * This will only fire once per button press. If you need to check for a button being held down, use isDown instead.
 		 * Returns the name of the matched mapped button(s), in case you need it.
 		 */
 		player.interaction_mapped.isPressed = (button) => {
 			button = (typeof button === 'string') ? Array(button) : button;
 			let matchedButtons = button.filter(x => player.interaction_mapped.pressed.includes(x))
+			return matchedButtons.length ? matchedButtons : false;
+		},
+
+		/**
+		 * Pass a mapped button name, or an array of mapped button names to check if any are currently pressed in this update step.
+		 * This differs from the isPressed function in that it will return true if the button is currently pressed, even if it was pressed in a previous update step.
+		 * Returns the name of the matched button(s), in case you need it.
+		 */
+		player.interaction_mapped.isDown = (button) => {
+			button = (typeof button === 'string') ? Array(button) : button;
+			let matchedButtons = button.filter(x => player.buttons_mapped[x])
 			return matchedButtons.length ? matchedButtons : false;
 		},
 
@@ -266,6 +294,115 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			let matchedButtons = button.filter(x => player.interaction_mapped.released.includes(x))
 			return matchedButtons.length ? matchedButtons : false;
 		}
+
+		/**
+		 * Pass a button name, or an array of button names to check if any are currently pressed in this update step.
+		 * Similar to Phaser's keyboard plugin, the checkDown function can accept a 'duration' parameter, and will only register a press once every X milliseconds.
+		 * Returns the name of the matched button(s)
+		 *
+		 * @param {string|array} button Array of buttons to check
+		 * @param {number} duration The duration which must have elapsed before this button is considered as being down.
+		 * @param {boolean} includeFirst - When true, the initial press of the button will be included in the results. Defaults to false.
+		 */
+		player.interaction.checkDown = (button, duration, includeFirst) => {
+			if (includeFirst === undefined) { includeFirst = false; }
+			if (duration === undefined) { duration = 0; }
+			
+			let matchedButtons = [];
+			let downButtons = player.interaction.isDown(button)
+			if (downButtons.length) {
+
+				for (let thisButton of downButtons) {
+					if (typeof player.timers[thisButton]._tick === 'undefined') {
+						player.timers[thisButton]._tick = 0;
+						if (includeFirst) {
+							matchedButtons.push(thisButton);
+						}
+					}
+	
+					let t = Phaser.Math.Snap.Floor(this.scene.sys.time.now - player.timers[thisButton].pressed, duration);
+					if (t > player.timers[thisButton]._tick) {
+						this.game.events.once(Phaser.Core.Events.POST_STEP, ()=>{
+							player.timers[thisButton]._tick = t;
+						});
+						matchedButtons.push(thisButton);
+					}
+				}
+			}
+
+			return matchedButtons.length ? matchedButtons : false;
+		},
+
+		/**
+		 * Mapped version of the checkDown version - resolves mapped button names and calls the checkDown function
+		 */
+			player.interaction_mapped.checkDown = (button, duration, includeFirst) => {
+			if (includeFirst === undefined) { includeFirst = false; }
+			let unmappedButtons = [];
+
+			// Resolve the unmapped button names to a new array
+			for (let thisButton of button) {
+				let unmappedButton = this.getUnmappedButton(player, thisButton);
+
+				if (unmappedButton) {
+					unmappedButtons.push(unmappedButton)
+				}
+			}
+
+			let downButtons = player.interaction.checkDown(unmappedButtons, duration, includeFirst);
+			return downButtons.length ? downButtons.map(x => this.getMappedButton(player, x)) : false;
+ 		}
+
+
+		/**
+		 * The previous functions are specific to the interaction and interaction_mapped definition of buttons.
+		 * In general you would pick a definition scheme and query that object (interaction or interaction_mapped), just for ease though, we'll add some functions that accept either type of convention
+		 */
+
+		/**
+		 * Pass a button name, or an array of button names to check if any were pressed in this update step.
+		 * This will only fire once per button press. If you need to check for a button being held down, use isDown instead.
+		 * Returns the name of the matched button(s), in case you need it.
+		 */
+		player.isPressed = (button) => {
+			let matchedButtons = [...player.interaction.isPressed(button), ...player.interaction_mapped.isPressed(button)]
+			return matchedButtons.length ? matchedButtons : false
+		},
+
+		/**
+		 * Pass a button name, or an array of button names to check if any are currently pressed in this update step.
+		 * This differs from the isPressed function in that it will return true if the button is currently pressed, even if it was pressed in a previous update step.
+		 * Returns the name of the button(s), in case you need it.
+		 */
+		player.isDown = (button) => {
+			let matchedButtons = [...player.interaction.isDown(button), ...player.interaction_mapped.isDown(button)]
+			return matchedButtons.length ? matchedButtons : false
+		},
+
+		/**
+		 * Pass a button name, or an array of button names to check if any were released in this update step.
+		 * Returns the name of the matched button(s), in case you need it.
+		 */
+		player.isReleased = (button) => {
+			let matchedButtons = [...player.interaction.isReleased(button), ...player.interaction_mapped.isReleased(button)]
+			return matchedButtons.length ? matchedButtons : false
+		}
+
+
+		/**
+		 * Pass a button name, or an array of button names to check if any are currently pressed in this update step.
+		 * Similar to Phaser's keyboard plugin, the checkDown function can accept a 'duration' parameter, and will only register a press once every X milliseconds.
+		 * Returns the name of the matched button(s)
+		 *
+		 * @param {string|array} button Array of buttons to check
+		 * @param {number} - The duration which must have elapsed before this button is considered as being down.
+		 */
+		player.checkDown = (button, duration, includeFirst) => {
+			if (includeFirst === undefined) { includeFirst = false; }
+			let matchedButtons = [...player.interaction.checkDown(button, duration, includeFirst), ...player.interaction_mapped.checkDown(button, duration, includeFirst)]
+			return matchedButtons.length ? matchedButtons : false
+		}
+		
 
 		player.setDevice = (device) => {
 			if (player.interaction.device != device) {
@@ -344,6 +481,20 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	getMappedButton(player, buttonID) {
 		buttonID = buttonID.toString().replace(/\D/g, '');
 		return Object.keys(player.gamepadMapping).find(key => player.gamepadMapping[key] == buttonID);
+	}
+
+	/**
+	 * Given a player and a mapped button name, return the button ID that it resolves to, e.g. 'RC_S' (Right cluster, South - X on an xbox gamepad) = B0.
+	 * This takes directions into account and will thus return 'LEFT' for LC_W, instead of the button ID that can be found in the gamepadMapping.
+	 * @param {*} player 
+	 * @param {*} mappedButton 
+	 */
+	getUnmappedButton(player, mappedButton) {
+		let buttonNo = player.gamepadMapping[mappedButton];
+		let dpadMapping = this.dpadMappings;
+		let direction = Object.keys(dpadMapping).find(key => dpadMapping[key] == buttonNo);
+
+		return direction ? direction : 'B' + player.gamepadMapping[mappedButton];
 	}
 
 	// Keyboard functions
@@ -449,6 +600,11 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisPlayer.interaction.last = playerAction;
 			thisPlayer.interaction.lastPressed = playerAction;
 
+			// Update timers
+			thisPlayer.timers[playerAction].pressed = this.scene.sys.time.now;
+			thisPlayer.timers[playerAction].released = 0;
+			thisPlayer.timers[playerAction].duration = 0;
+
 			// Update mapped button object
 			if (typeof this.dpadMappings[playerAction] !== "undefined") {
 				playerAction = 'B' + this.dpadMappings[playerAction];
@@ -484,6 +640,11 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisPlayer.interaction.released.push(playerAction);
 			thisPlayer.interaction.lastReleased = playerAction;
 			
+			// Update timers
+			thisPlayer.timers[playerAction].released = this.scene.sys.time.now;
+			thisPlayer.timers[playerAction].duration = thisPlayer.timers[playerAction].released - thisPlayer.timers[playerAction].pressed;
+			delete thisPlayer.timers[playerAction]._tick;
+
 			// Update mapped button object
 			if (typeof this.dpadMappings[playerAction] !== "undefined") {
 				playerAction = 'B' + this.dpadMappings[playerAction];
@@ -539,11 +700,18 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 		// Buttons
 		if (![12, 13, 14, 15].includes(button.index)) {
+			let playerAction = 'B' + button.index;
+
 			// Update the last button state
-			this.players[pad.index].interaction.pressed.push('B' + button.index);
-			this.players[pad.index].interaction.last = 'B' + button.index;
-			this.players[pad.index].interaction.lastPressed = 'B' + button.index;
-			this.players[pad.index].interaction.buffer.push('B' + button.index);
+			this.players[pad.index].interaction.pressed.push(playerAction);
+			this.players[pad.index].interaction.last = playerAction;
+			this.players[pad.index].interaction.lastPressed = playerAction;
+			this.players[pad.index].interaction.buffer.push(playerAction);
+
+			// Update timers
+			this.players[pad.index].timers[playerAction].pressed = this.scene.sys.time.now;
+			this.players[pad.index].timers[playerAction].released = 0;
+			this.players[pad.index].timers[playerAction].duration = 0;
 
 			// Update mapped button object
 			let mappedButton = this.getMappedButton(this.players[pad.index], button.index);
@@ -565,6 +733,12 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			this.players[pad.index].interaction.lastPressed = direction;
 			this.players[pad.index].interaction.buffer.push(direction);
 			this.players[pad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+
+			// Update timers
+			this.players[pad.index].timers[direction].pressed = this.scene.sys.time.now;
+			this.players[pad.index].timers[direction].released = 0;
+			this.players[pad.index].timers[direction].duration = 0;
+
 
 			// Update mapped button object
 			let mappedButton = this.getMappedButton(this.players[pad.index], button.index);
@@ -592,9 +766,15 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 		// Buttons
 		if (![12, 13, 14, 15].includes(button.index)) {
+			let playerAction = 'B' + button.index;
+
 			// Update the last button state
-			this.players[pad.index].interaction.released.push('B' + button.index);
-			this.players[pad.index].interaction.lastReleased = 'B' + button.index;
+			this.players[pad.index].interaction.released.push(playerAction);
+			this.players[pad.index].interaction.lastReleased = playerAction;
+
+			// Update timers
+			this.players[pad.index].timers[playerAction].released = this.scene.sys.time.now;
+			this.players[pad.index].timers[playerAction].duration = this.players[pad.index].timers[playerAction].released - this.players[pad.index].timers[playerAction].pressed;
 
 			// Update mapped button object
 			let mappedButton = this.getMappedButton(this.players[pad.index], button.index);
@@ -612,6 +792,10 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 			this.players[pad.index].interaction.released.push(direction);
 			this.players[pad.index].interaction.lastReleased = direction;
+
+			// Update timers
+			this.players[pad.index].timers[direction].released = this.scene.sys.time.now;
+			this.players[pad.index].timers[direction].duration = this.players[pad.index].timers[direction].released - this.players[pad.index].timers[direction].pressed;
 
 			// Update mapped button object
 			let mappedButton = this.getMappedButton(this.players[pad.index], button.index);
@@ -1012,7 +1196,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 //				'device': thisPlayer.interaction.device,
 				'buttons': thisPlayer.buttons,
 				'buttons_mapped': thisPlayer.buttons_mapped,
-				'interaction_mapped': thisPlayer.interaction_mapped,
+				'timers': thisPlayer.timers,
 				'pointer': thisPlayer.pointer,
 				'direction': thisPlayer.direction,
 				'direction_secondary': thisPlayer.direction_secondary,

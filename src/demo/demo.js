@@ -67,7 +67,7 @@ export default class Demo extends Phaser.Scene {
             color: '#00ff00'
         });
 
-        this.player2Text = this.add.text(50, 700, '', {
+        this.player2Text = this.add.text(50, 740, '', {
             fontFamily: 'Arial',
             fontSize: 14,
             color: '#00ff00'
@@ -137,6 +137,7 @@ export default class Demo extends Phaser.Scene {
             'Directions: ' + JSON.stringify(this.player1.direction),
             'Buttons: ' + JSON.stringify(this.player1.buttons),
             'Interaction: ' + JSON.stringify(this.player1.interaction),
+            `isDown: ${this.player1.isDown(Object.keys(this.player1.buttons_mapped))}, ${this.player1.isDown(Object.keys(this.player1.buttons))}`,
             'Internal: ' + JSON.stringify(this.player1.internal)
         ]);
         this.player2Text.setText([
@@ -144,19 +145,69 @@ export default class Demo extends Phaser.Scene {
             'Directions: ' + JSON.stringify(this.player2.direction),
             'Buttons: ' + JSON.stringify(this.player2.buttons),
             'Interaction: ' + JSON.stringify(this.player2.interaction),
+            `isDown: ${this.player2.isDown(Object.keys(this.player2.buttons_mapped))}, ${this.player2.isDown(Object.keys(this.player2.buttons))}`,
             'Internal: ' + JSON.stringify(this.player2.internal)
         ]);
         
 
         // Here we check if certain buttons were pressed in this update step.
-        if (this.player1.interaction_mapped.isPressed(['START','RC_S','RC_N'])) {
-            console.log(this.player1.interaction_mapped.isPressed(['START', 'RC_S', 'RC_N'])[0])
+        if (this.player1.interaction_mapped.isPressed(['LC_N','START','RC_S','RC_N'])) {
+            console.log(`mapped - isPressed: ${this.player1.interaction_mapped.isPressed(['LC_N', 'START', 'RC_S', 'RC_N'])}`)
         }
 
-        if (this.player1.interaction.isPressed(['M1', 'M2'])) {
-            console.log(this.player1.interaction.isPressed(['M1', 'M2'])[0])
+        // Here we check if certain buttons are held down in this update step.
+        if (this.player1.interaction_mapped.isDown(['LC_N', 'RC_S', 'RC_N'])) {
+            console.log(`mapped - isDown: ${this.player1.interaction_mapped.isDown(['LC_N', 'RC_S', 'RC_N'])}`)
         }
 
+        // Here we check if certain buttons are held down for a given duration in this update step.
+        if (this.player1.interaction_mapped.checkDown(['LC_N'], 1000)) {
+            console.log(`mapped checkDown: ${this.player1.interaction_mapped.checkDown(['LC_N'], 1000)}`)
+        }
+
+        // Here we check if certain buttons are held down in this update step.
+        if (this.player1.interaction.isPressed(['DOWN', 'B1'])) {
+            console.log(`raw - isPressed: ${this.player1.interaction.isPressed(['DOWN', 'B1'])}`)
+        }
+
+        // Here we check if certain buttons are held down in this update step.
+        if (this.player1.interaction.isDown(['DOWN', 'B1'])) {
+            console.log(`raw - isDown: ${this.player1.interaction.isDown(['DOWN', 'B1'])}`)
+        }
+
+        // Here we check if certain buttons are held down for a given duration in this update step.
+        if (this.player1.interaction.checkDown(['DOWN'], 1000, true)) {
+            console.log(`raw checkDown: ${this.player1.interaction.checkDown(['DOWN'], 1000, true)}`)
+        }
+
+
+        // Generic button (mapped / unmapped) isPressed function
+        if (this.player1.isPressed(['RIGHT', 'LC_W', 'B2'])) {
+            console.log(`generic - isPressed: ${this.player1.isPressed(['RIGHT', 'LC_W', 'B2'])}`)
+        }
+
+        // Generic button (mapped / unmapped) isDown function
+        if (this.player1.isDown(['RIGHT', 'LC_W', 'B2'])) {
+            console.log(`generic - isDown: ${this.player1.isDown(['RIGHT', 'LC_W', 'B2'])}`)
+        }
+
+        // Generic button (mapped / unmapped) isReleased function
+        if (this.player1.isReleased(['RIGHT', 'LC_W', 'B2'])) {
+            console.log(`generic - isReleased: ${this.player1.isReleased(['RIGHT', 'LC_W', 'B2'])}`)
+        }
+
+        // Here we check if certain buttons are held down for a given duration in this update step.
+        if (this.player1.checkDown(['LEFT'], 1000)) {
+            console.log(`generic checkDown: ${this.player1.checkDown(['LEFT'], 1000)}`)
+        }
+
+        // Mouse pointer check
+        if (this.player1.isPressed(['M1', 'M2'])) {
+            console.log(`isPressed: ${this.player1.interaction.isPressed(['M1', 'M2'])}`)
+        }
+
+
+        
         // Set a position for the player
         this.player1.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
 
