@@ -170,6 +170,14 @@ export default class controlManager {
             };
         }
 
+        for (let thisPointer of ['M1', 'M2', 'M3', 'M4', 'M5']) {
+            controls.timers[thisPointer] = {
+                'pressed': 0,
+                'released': 0,
+                'duration': 0
+            };
+        }
+
 
         controls.setPosition = function(x,y) {
             this.position.x = x;

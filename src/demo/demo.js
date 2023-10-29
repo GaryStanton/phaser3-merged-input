@@ -235,16 +235,17 @@ export default class Demo extends Phaser.Scene {
             console.log(`generic - isReleased: ${this.player1.isReleased(['RIGHT', 'LC_W', 'B2'])}`)
         }
 
+        */
+
         // Here we check if certain buttons are held down for a given duration in this update step.
-        if (this.player1.checkDown(['LEFT'], 1000)) {
-            console.log(`generic checkDown: ${this.player1.checkDown(['LEFT'], 1000)}`)
+        if (this.player1.checkDown(['LEFT', 'M1'], 1000)) {
+            console.log(`generic checkDown: ${this.player1.checkDown(['LEFT', 'M1'], 1000)}`)
         }
 
         // Mouse pointer check
         if (this.player1.isPressed(['M1', 'M2'])) {
             console.log(`isPressed: ${this.player1.interaction.isPressed(['M1', 'M2'])}`)
         }
-        */
 
 
  

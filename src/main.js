@@ -249,7 +249,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			button = (typeof button === 'string') ? Array(button) : button;
 			let matchedButtons = button.filter(x => player.buttons[x])
 			let matchedDirections = button.filter(x => player.direction[x])
-			let matchedAll = [...matchedButtons, ...matchedDirections];
+			let matchedPointer = button.filter(x => player.pointer[x])
+			let matchedAll = [...matchedButtons, ...matchedDirections, ...matchedPointer];
 
 			return matchedAll.length ? matchedAll : false;
 		},
@@ -366,7 +367,9 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		 * Returns the name of the matched button(s), in case you need it.
 		 */
 		player.isPressed = (button) => {
-			let matchedButtons = [...player.interaction.isPressed(button), ...player.interaction_mapped.isPressed(button)]
+			let interaction = player.interaction.isPressed(button) || [];
+			let interaction_mapped = player.interaction_mapped.isPressed(button) || [];
+			let matchedButtons = [...interaction, ...interaction_mapped];
 			return matchedButtons.length ? matchedButtons : false
 		},
 
@@ -376,7 +379,9 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		 * Returns the name of the button(s), in case you need it.
 		 */
 		player.isDown = (button) => {
-			let matchedButtons = [...player.interaction.isDown(button), ...player.interaction_mapped.isDown(button)]
+			let interaction = player.interaction.isDown(button) || [];
+			let interaction_mapped = player.interaction_mapped.isDown(button) || [];
+			let matchedButtons = [...interaction, ...interaction_mapped];
 			return matchedButtons.length ? matchedButtons : false
 		},
 
@@ -385,7 +390,9 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		 * Returns the name of the matched button(s), in case you need it.
 		 */
 		player.isReleased = (button) => {
-			let matchedButtons = [...player.interaction.isReleased(button), ...player.interaction_mapped.isReleased(button)]
+			let interaction = player.interaction.isReleased(button) || [];
+			let interaction_mapped = player.interaction_mapped.isReleased(button) || [];
+			let matchedButtons = [...interaction, ...interaction_mapped];
 			return matchedButtons.length ? matchedButtons : false
 		}
 
@@ -400,7 +407,9 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		 */
 		player.checkDown = (button, duration, includeFirst) => {
 			if (includeFirst === undefined) { includeFirst = false; }
-			let matchedButtons = [...player.interaction.checkDown(button, duration, includeFirst), ...player.interaction_mapped.checkDown(button, duration, includeFirst)]
+			let interaction = player.interaction.checkDown(button, duration, includeFirst) || [];
+			let interaction_mapped = player.interaction_mapped.checkDown(button, duration, includeFirst) || [];
+			let matchedButtons = [...interaction, ...interaction_mapped];
 			return matchedButtons.length ? matchedButtons : false
 		}
 		
