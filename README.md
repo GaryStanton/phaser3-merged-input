@@ -182,6 +182,10 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
+v1.8.1 - 2023-10-29  
+Added mouse pointers to checkDown function.  
+Fixed issue with generic player helper functions when player not fully initialised.  
+
 v1.8.0 - 2023-10-29  
 Added new ButtonCombos, to mimic Phaser's KeyCombos with gamepad buttons.  
 Added timers to button presses, we're now able to retrieve a pressed, released, and duration value.  

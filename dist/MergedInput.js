@@ -497,7 +497,10 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				var matchedDirections = button.filter(function (x) {
 					return player.direction[x];
 				});
-				var matchedAll = [].concat(_toConsumableArray(matchedButtons), _toConsumableArray(matchedDirections));
+				var matchedPointer = button.filter(function (x) {
+					return player.pointer[x];
+				});
+				var matchedAll = [].concat(_toConsumableArray(matchedButtons), _toConsumableArray(matchedDirections), _toConsumableArray(matchedPointer));
 
 				return matchedAll.length ? matchedAll : false;
 			},
@@ -674,7 +677,9 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
     * Returns the name of the matched button(s), in case you need it.
     */
 			player.isPressed = function (button) {
-				var matchedButtons = [].concat(_toConsumableArray(player.interaction.isPressed(button)), _toConsumableArray(player.interaction_mapped.isPressed(button)));
+				var interaction = player.interaction.isPressed(button) || [];
+				var interaction_mapped = player.interaction_mapped.isPressed(button) || [];
+				var matchedButtons = [].concat(_toConsumableArray(interaction), _toConsumableArray(interaction_mapped));
 				return matchedButtons.length ? matchedButtons : false;
 			},
 
@@ -684,7 +689,9 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
     * Returns the name of the button(s), in case you need it.
     */
 			player.isDown = function (button) {
-				var matchedButtons = [].concat(_toConsumableArray(player.interaction.isDown(button)), _toConsumableArray(player.interaction_mapped.isDown(button)));
+				var interaction = player.interaction.isDown(button) || [];
+				var interaction_mapped = player.interaction_mapped.isDown(button) || [];
+				var matchedButtons = [].concat(_toConsumableArray(interaction), _toConsumableArray(interaction_mapped));
 				return matchedButtons.length ? matchedButtons : false;
 			},
 
@@ -693,7 +700,9 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
     * Returns the name of the matched button(s), in case you need it.
     */
 			player.isReleased = function (button) {
-				var matchedButtons = [].concat(_toConsumableArray(player.interaction.isReleased(button)), _toConsumableArray(player.interaction_mapped.isReleased(button)));
+				var interaction = player.interaction.isReleased(button) || [];
+				var interaction_mapped = player.interaction_mapped.isReleased(button) || [];
+				var matchedButtons = [].concat(_toConsumableArray(interaction), _toConsumableArray(interaction_mapped));
 				return matchedButtons.length ? matchedButtons : false;
 			};
 
@@ -709,7 +718,9 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				if (includeFirst === undefined) {
 					includeFirst = false;
 				}
-				var matchedButtons = [].concat(_toConsumableArray(player.interaction.checkDown(button, duration, includeFirst)), _toConsumableArray(player.interaction_mapped.checkDown(button, duration, includeFirst)));
+				var interaction = player.interaction.checkDown(button, duration, includeFirst) || [];
+				var interaction_mapped = player.interaction_mapped.checkDown(button, duration, includeFirst) || [];
+				var matchedButtons = [].concat(_toConsumableArray(interaction), _toConsumableArray(interaction_mapped));
 				return matchedButtons.length ? matchedButtons : false;
 			};
 
@@ -2082,6 +2093,16 @@ var controlManager = function () {
             for (var _i2 = 0; _i2 < _arr.length; _i2++) {
                 var thisDirection = _arr[_i2];
                 controls.timers[thisDirection] = {
+                    'pressed': 0,
+                    'released': 0,
+                    'duration': 0
+                };
+            }
+
+            var _arr2 = ['M1', 'M2', 'M3', 'M4', 'M5'];
+            for (var _i3 = 0; _i3 < _arr2.length; _i3++) {
+                var thisPointer = _arr2[_i3];
+                controls.timers[thisPointer] = {
                     'pressed': 0,
                     'released': 0,
                     'duration': 0
