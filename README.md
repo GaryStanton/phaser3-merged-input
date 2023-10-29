@@ -17,6 +17,7 @@ Each player object contains direction and button actions. These are updated by t
 . Check the last device type used for interaction.  
 · (v1.4.0) Button mapping to consistent names such as 'RC_X' for the right cluster of buttons  
 · (v1.4.0) Normalising of gamepad devices, including generating dpad events for gamepads that map them as axis internally  
+· (v1.8.0) 'ButtonCombos' mimic Phaser's 'KeyCombo' functionality for gamepads. 
 
 ## Installation
 
@@ -148,6 +149,24 @@ A new plugin specific eventEmitter instance exists at `mergedInput.events`.
 You may use this across your game to listen for keypresses, button presses and device changes (i.e. moving from using the keyboard to a gamepad).
 
 
+### New in v1.8.0
+BUTTON COMBOS ARE HERE!!  
+A new 'ButtonCombo' exists in the merged input plugin to mimic Phaser's native KeyCombos for gamepad/player combinations.  
+Button combos emit `buttoncombomatch` events.  
+Setting them up is easy:  
+```javascript
+    let combos_konami = mergedInput.createButtonCombo(player1, ['UP', 'UP', 'DOWN', 'DOWN', 'LEFT', 'RIGHT', 'LEFT', 'RIGHT', 'RC_E', 'RC_S'], { resetOnMatch: true });
+    combos_konami.name = 'Konami Code';
+
+    mergedInput.events.on('buttoncombomatch', event => {
+        console.log(`Player: ${event.player.index} entered: ${event.combo.name}!`);
+    });
+```
+
+Note that combo checking only occurrs on gamepad actions. Keyboard combos are still handled by Phaser.  
+
+
+
 
 ## Demo / Dev
 A demo scene is included in the repository.  
@@ -163,6 +182,12 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
+v1.8.0 - 2023-10-29  
+Added new ButtonCombos, to mimic Phaser's KeyCombos with gamepad buttons.  
+Added timers to button presses, we're now able to retrieve a pressed, released, and duration value.  
+Added extra helper functions to the player object, including `isDown` and `checkDown` to mimic Phaser's keyboard handling with merged input.  
+Player helper objects are now able to be called directly on the player object and will accept either mapped or unmapped button actions.  
+
 v1.7.0 - 2023-10-15
 Added a new plugin specific instance of the event emitter.
 The old 'mergedInput' events continue to fire on the scene's emitter; however as they are all the same event with extra data, you need to listen to all every 'mergedInput' event and filter for the ones you need.
@@ -264,11 +289,20 @@ The keys struct contains arrays of keyboard characters or mouse buttons that wil
 <dt><a href="#defineKey">defineKey(player, action, value, append)</a></dt>
 <dd><p>Define a key for a player/action combination</p>
 </dd>
-<dt><a href="#isPressed">{player}.interaction.isPressed(button)</a></dt>
+<dt><a href="#createButtonCombo">createButtonCombo(player, buttons, [config])</a></dt>
+<dd><p>A ButtonCombo will listen for a specific combination of buttons from the given player's gamepad, and when it receives them it will emit a buttoncombomatch event.</p>
+</dd>
+<dt><a href="#isPressed">{player}.isPressed(button)</a></dt>
 <dd><p>Pass one or more button names to check whether one or more buttons were pressed during an update tick.</p>
 </dd>
-<dt><a href="#isReleased">{player}.interaction.isPressed(button)</a></dt>
+<dt><a href="#isReleased">{player}.isReleased(button)</a></dt>
 <dd><p>Pass one or more button names to check whether one or more buttons were released during an update tick.</p>
+</dd>
+<dt><a href="#isDown">{player}.isDown(button)</a></dt>
+<dd><p>Pass one or more button names to check whether one or more buttons are held down during an update tick.</p>
+</dd>
+<dt><a href="#checkDown">{player}.checkDown(button, duration, includeFirst)</a></dt>
+<dd><p>Pass one or more button names to check whether one or more buttons are held down during an update tick. You may provide a duration to this method and it will return true every X milliseconds.</p>
 </dd>
 </dl>
 
@@ -298,14 +332,26 @@ Get player object
 Define a key for a player/action combination
 | Param | Type | |
 | --- | --- | --- |
-| player | <code>number</code> | The player on which we're defining a key |
+| player | <code>number</code> | The player ID on which we're defining a key |
 | action | <code>string</code> | The action to define |
 | value | <code>string</code> | The key to use |
 | append | <code>boolean</code> | When true, this key definition will be appended to the existing key(s) for this action |
 
+<a name="createButtonCombo"></a>
+
+### createButtonCombo(player, buttons, [config])
+A ButtonCombo will listen for a specific combination of buttons from the given player's gamepad, and when it receives them it will emit a buttoncombomatch event.
+
+| Param | Type | |
+| --- | --- | --- |
+| player | <code>object</code> | The player object on which we're defining a key |
+| buttons | <code>array</code> | An array of buttons to act as the combo. You may use directions ['UP'], button IDs ['B12'] or mapped buttons ['LC_N'] |
+| config | <code>Phaser.Types.Input.Keyboard.KeyComboConfig</code> | A Key Combo configuration object. Uses the same config as Phaser's native KeyCombo classes |
+
+
 <a name="isPressed"></a>
 
-### {player}.interaction.isPressed(button)
+### {player}.isPressed(button)
 Check if button(s) were pressed during an update tick
 
 | Param | Type |
@@ -315,12 +361,35 @@ Check if button(s) were pressed during an update tick
 
 <a name="isReleased"></a>
 
-### {player}.interaction.isReleased(button)
+### {player}.isReleased(button)
 Check if button(s) were released during an update tick
 
 | Param | Type |
 | --- | --- |
 | button | <code>string/array</code> | 
+
+<a name="isDown"></a>
+
+### {player}.isDown(button)
+Check if button(s) were held down during an update tick
+
+| Param | Type |
+| --- | --- |
+| button | <code>string/array</code> | 
+
+<a name="checkDown"></a>
+
+### {player}.checkDown(button)
+Check if button(s) were held down during an update tick  
+You may provide a duration to this method and it will return true every X milliseconds.
+
+| Param | Type |
+| --- | --- |
+| button | <code>string/array</code> | 
+| duration | <code>number</code> | The duration which must have elapsed before this button is considered as being down.
+| includeFirst | <code>boolean</code> | When true, include the first press of a button, otherwise wait for the first passing of the duration.
+
+
 
 
 ## Events
@@ -338,3 +407,4 @@ Check if button(s) were released during an update tick
 | gamepad_directionup | Gamepad D-Pad released | player: player instance, direction: D-Pad direction released |
 | pointer_down | Mouse button pressed | button number pressed |
 | pointer_up | Mouse button released | button number released |
+| buttoncombomatch | A button combo match has occurred | player: player instance, combo: The ButtonCombo object that matched |

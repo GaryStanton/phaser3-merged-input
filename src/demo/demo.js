@@ -67,11 +67,24 @@ export default class Demo extends Phaser.Scene {
             color: '#00ff00'
         });
 
-        this.player2Text = this.add.text(50, 740, '', {
+        this.player1Combos = this.add.text(50, 730, '', {
+            fontFamily: 'Arial',
+            fontSize: 16,
+            color: '#00ff00'
+        });
+
+        this.player2Text = this.add.text(50, 800, '', {
             fontFamily: 'Arial',
             fontSize: 14,
             color: '#00ff00'
         });
+
+        this.player2Combos = this.add.text(50, 930, '', {
+            fontFamily: 'Arial',
+            fontSize: 16,
+            color: '#00ff00'
+        });
+
 
         // Instructions
         this.instructions1 = this.add.text(50, 20, ['Directions: WASD', 'Buttons: 1-0'], {
@@ -84,6 +97,29 @@ export default class Demo extends Phaser.Scene {
             fontSize: 14,
             color: '#00ff00'
         });
+
+        // Set a position for the player
+        this.player1.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
+
+
+        
+        /**
+         * Some examples of creating button combos
+         */
+        this.input.keyboard.createCombo([38, 38, 40, 40, 37, 39, 37, 39, 66, 65], { resetOnMatch: true }).name = 'Konami code - Keyboard';
+        this.inputController.mergedInput.createButtonCombo(this.player1, ['UP', 'UP', 'DOWN', 'DOWN', 'LEFT', 'RIGHT', 'LEFT', 'RIGHT', 'RC_E', 'RC_S'], { resetOnMatch: true }).name = 'Konami code - Gamepad';
+        this.inputController.mergedInput.createButtonCombo(this.player1, ['B12', 'B13'], { resetOnMatch: true }).name = 'Button ID test';
+
+        this.input.keyboard.on('keycombomatch', event => {
+            this.player1Combos.setText(`KEY COMBO: ${event.name}`)
+            console.log(`${event.name} entered!`);
+        });
+
+        this.inputController.mergedInput.events.on('buttoncombomatch', event => {
+            this[`player${event.player.index + 1}Combos`].setText(`BUTTON COMBO: ${event.combo.name}`)
+            console.log(`${event.combo.name} entered! - Player: ${event.player.index}`);
+        });
+
     }
 
     update() {
@@ -149,7 +185,10 @@ export default class Demo extends Phaser.Scene {
             'Internal: ' + JSON.stringify(this.player2.internal)
         ]);
         
-
+        /** 
+         * Some logging of player helper functions
+         */
+        /*
         // Here we check if certain buttons were pressed in this update step.
         if (this.player1.interaction_mapped.isPressed(['LC_N','START','RC_S','RC_N'])) {
             console.log(`mapped - isPressed: ${this.player1.interaction_mapped.isPressed(['LC_N', 'START', 'RC_S', 'RC_N'])}`)
@@ -205,11 +244,10 @@ export default class Demo extends Phaser.Scene {
         if (this.player1.isPressed(['M1', 'M2'])) {
             console.log(`isPressed: ${this.player1.interaction.isPressed(['M1', 'M2'])}`)
         }
+        */
 
 
-        
-        // Set a position for the player
-        this.player1.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
+ 
 
 
         // this.debugView.value = this.inputController.mergedInput.debug().input;

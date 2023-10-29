@@ -1,5 +1,6 @@
 import bearings from './configs/bearings'
 import controlManager from './controlManager'
+import ButtonCombo from './ButtonCombo'
 
 export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
@@ -1054,6 +1055,20 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
 		}
 	}
+
+
+	/**
+     * Create new button combo.
+	 * Combos extend Phaser's keyboard combo and mimic their functionality for gamepad/player combinations.
+	 * If you requrie a keyboard entered combo, use the native Phaser.Input.Keyboard.KeyboardPlugin.createCombo function.
+	 * 
+	 * @param {player} player - A player object. If more than one player should be able to execute the combo, you should create multiple buttonCombo instances.
+     * @param {(object[])} buttons - An array of buttons that comprise this combo. Use button IDs, mapped buttons or directions, e.g. ['UP', 'UP', 'DOWN', 'DOWN', 'LEFT', 'RIGHT', 'LEFT', 'RIGHT', 'RC_E', 'RC_S']
+     * @param {Phaser.Types.Input.Keyboard.KeyComboConfig} [config] - A Key Combo configuration object.
+     */
+    createButtonCombo(player, buttons, config) {
+        return new ButtonCombo(this, player, buttons, config);
+    }
 
 
 	/**
