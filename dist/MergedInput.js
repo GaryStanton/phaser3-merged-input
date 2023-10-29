@@ -119,9 +119,11 @@ var _controlManager = __webpack_require__(2);
 
 var _controlManager2 = _interopRequireDefault(_controlManager);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _ButtonCombo = __webpack_require__(7);
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+var _ButtonCombo2 = _interopRequireDefault(_ButtonCombo);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -471,6 +473,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 			/**
     * Pass a button name, or an array of button names to check if any were pressed in this update step.
+    * This will only fire once per button press. If you need to check for a button being held down, use isDown instead.
     * Returns the name of the matched button(s), in case you need it.
     */
 			player.interaction.isPressed = function (button) {
@@ -480,6 +483,25 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				});
 				return matchedButtons.length ? matchedButtons : false;
 			},
+
+			/**
+    * Pass a button name, or an array of button names to check if any are currently pressed in this update step.
+    * This differs from the isPressed function in that it will return true if the button is currently pressed, even if it was pressed in a previous update step.
+    * Returns the name of the matched button(s), in case you need it.
+    */
+			player.interaction.isDown = function (button) {
+				button = typeof button === 'string' ? Array(button) : button;
+				var matchedButtons = button.filter(function (x) {
+					return player.buttons[x];
+				});
+				var matchedDirections = button.filter(function (x) {
+					return player.direction[x];
+				});
+				var matchedAll = [].concat(_toConsumableArray(matchedButtons), _toConsumableArray(matchedDirections));
+
+				return matchedAll.length ? matchedAll : false;
+			},
+
 			/**
     * Pass a button name, or an array of button names to check if any were released in this update step.
     * Returns the name of the matched button(s), in case you need it.
@@ -494,12 +516,26 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 			/**
     * Pass a mapped button name, or an array of mapped button names to check if any were pressed in this update step.
+    * This will only fire once per button press. If you need to check for a button being held down, use isDown instead.
     * Returns the name of the matched mapped button(s), in case you need it.
     */
 			player.interaction_mapped.isPressed = function (button) {
 				button = typeof button === 'string' ? Array(button) : button;
 				var matchedButtons = button.filter(function (x) {
 					return player.interaction_mapped.pressed.includes(x);
+				});
+				return matchedButtons.length ? matchedButtons : false;
+			},
+
+			/**
+    * Pass a mapped button name, or an array of mapped button names to check if any are currently pressed in this update step.
+    * This differs from the isPressed function in that it will return true if the button is currently pressed, even if it was pressed in a previous update step.
+    * Returns the name of the matched button(s), in case you need it.
+    */
+			player.interaction_mapped.isDown = function (button) {
+				button = typeof button === 'string' ? Array(button) : button;
+				var matchedButtons = button.filter(function (x) {
+					return player.buttons_mapped[x];
 				});
 				return matchedButtons.length ? matchedButtons : false;
 			},
@@ -513,6 +549,167 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				var matchedButtons = button.filter(function (x) {
 					return player.interaction_mapped.released.includes(x);
 				});
+				return matchedButtons.length ? matchedButtons : false;
+			};
+
+			/**
+    * Pass a button name, or an array of button names to check if any are currently pressed in this update step.
+    * Similar to Phaser's keyboard plugin, the checkDown function can accept a 'duration' parameter, and will only register a press once every X milliseconds.
+    * Returns the name of the matched button(s)
+    *
+    * @param {string|array} button Array of buttons to check
+    * @param {number} duration The duration which must have elapsed before this button is considered as being down.
+    * @param {boolean} includeFirst - When true, the initial press of the button will be included in the results. Defaults to false.
+    */
+			player.interaction.checkDown = function (button, duration, includeFirst) {
+				if (includeFirst === undefined) {
+					includeFirst = false;
+				}
+				if (duration === undefined) {
+					duration = 0;
+				}
+
+				var matchedButtons = [];
+				var downButtons = player.interaction.isDown(button);
+				if (downButtons.length) {
+					var _iteratorNormalCompletion5 = true;
+					var _didIteratorError5 = false;
+					var _iteratorError5 = undefined;
+
+					try {
+						var _loop = function _loop() {
+							var thisButton = _step5.value;
+
+							if (typeof player.timers[thisButton]._tick === 'undefined') {
+								player.timers[thisButton]._tick = 0;
+								if (includeFirst) {
+									matchedButtons.push(thisButton);
+								}
+							}
+
+							var t = Phaser.Math.Snap.Floor(_this3.scene.sys.time.now - player.timers[thisButton].pressed, duration);
+							if (t > player.timers[thisButton]._tick) {
+								_this3.game.events.once(Phaser.Core.Events.POST_STEP, function () {
+									player.timers[thisButton]._tick = t;
+								});
+								matchedButtons.push(thisButton);
+							}
+						};
+
+						for (var _iterator5 = downButtons[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+							_loop();
+						}
+					} catch (err) {
+						_didIteratorError5 = true;
+						_iteratorError5 = err;
+					} finally {
+						try {
+							if (!_iteratorNormalCompletion5 && _iterator5.return) {
+								_iterator5.return();
+							}
+						} finally {
+							if (_didIteratorError5) {
+								throw _iteratorError5;
+							}
+						}
+					}
+				}
+
+				return matchedButtons.length ? matchedButtons : false;
+			},
+
+			/**
+    * Mapped version of the checkDown version - resolves mapped button names and calls the checkDown function
+    */
+			player.interaction_mapped.checkDown = function (button, duration, includeFirst) {
+				if (includeFirst === undefined) {
+					includeFirst = false;
+				}
+				var unmappedButtons = [];
+
+				// Resolve the unmapped button names to a new array
+				var _iteratorNormalCompletion6 = true;
+				var _didIteratorError6 = false;
+				var _iteratorError6 = undefined;
+
+				try {
+					for (var _iterator6 = button[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+						var _thisButton = _step6.value;
+
+						var unmappedButton = _this3.getUnmappedButton(player, _thisButton);
+
+						if (unmappedButton) {
+							unmappedButtons.push(unmappedButton);
+						}
+					}
+				} catch (err) {
+					_didIteratorError6 = true;
+					_iteratorError6 = err;
+				} finally {
+					try {
+						if (!_iteratorNormalCompletion6 && _iterator6.return) {
+							_iterator6.return();
+						}
+					} finally {
+						if (_didIteratorError6) {
+							throw _iteratorError6;
+						}
+					}
+				}
+
+				var downButtons = player.interaction.checkDown(unmappedButtons, duration, includeFirst);
+				return downButtons.length ? downButtons.map(function (x) {
+					return _this3.getMappedButton(player, x);
+				}) : false;
+			};
+
+			/**
+    * The previous functions are specific to the interaction and interaction_mapped definition of buttons.
+    * In general you would pick a definition scheme and query that object (interaction or interaction_mapped), just for ease though, we'll add some functions that accept either type of convention
+    */
+
+			/**
+    * Pass a button name, or an array of button names to check if any were pressed in this update step.
+    * This will only fire once per button press. If you need to check for a button being held down, use isDown instead.
+    * Returns the name of the matched button(s), in case you need it.
+    */
+			player.isPressed = function (button) {
+				var matchedButtons = [].concat(_toConsumableArray(player.interaction.isPressed(button)), _toConsumableArray(player.interaction_mapped.isPressed(button)));
+				return matchedButtons.length ? matchedButtons : false;
+			},
+
+			/**
+    * Pass a button name, or an array of button names to check if any are currently pressed in this update step.
+    * This differs from the isPressed function in that it will return true if the button is currently pressed, even if it was pressed in a previous update step.
+    * Returns the name of the button(s), in case you need it.
+    */
+			player.isDown = function (button) {
+				var matchedButtons = [].concat(_toConsumableArray(player.interaction.isDown(button)), _toConsumableArray(player.interaction_mapped.isDown(button)));
+				return matchedButtons.length ? matchedButtons : false;
+			},
+
+			/**
+    * Pass a button name, or an array of button names to check if any were released in this update step.
+    * Returns the name of the matched button(s), in case you need it.
+    */
+			player.isReleased = function (button) {
+				var matchedButtons = [].concat(_toConsumableArray(player.interaction.isReleased(button)), _toConsumableArray(player.interaction_mapped.isReleased(button)));
+				return matchedButtons.length ? matchedButtons : false;
+			};
+
+			/**
+    * Pass a button name, or an array of button names to check if any are currently pressed in this update step.
+    * Similar to Phaser's keyboard plugin, the checkDown function can accept a 'duration' parameter, and will only register a press once every X milliseconds.
+    * Returns the name of the matched button(s)
+    *
+    * @param {string|array} button Array of buttons to check
+    * @param {number} - The duration which must have elapsed before this button is considered as being down.
+    */
+			player.checkDown = function (button, duration, includeFirst) {
+				if (includeFirst === undefined) {
+					includeFirst = false;
+				}
+				var matchedButtons = [].concat(_toConsumableArray(player.interaction.checkDown(button, duration, includeFirst)), _toConsumableArray(player.interaction_mapped.checkDown(button, duration, includeFirst)));
 				return matchedButtons.length ? matchedButtons : false;
 			};
 
@@ -542,64 +739,6 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 	}, {
 		key: 'getPlayerIndexFromKey',
 		value: function getPlayerIndexFromKey(key) {
-			var _iteratorNormalCompletion5 = true;
-			var _didIteratorError5 = false;
-			var _iteratorError5 = undefined;
-
-			try {
-				for (var _iterator5 = this.players[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-					var thisPlayer = _step5.value;
-
-					// Loop through all the keys assigned to this player
-					for (var thisKey in thisPlayer.keys) {
-						var _iteratorNormalCompletion6 = true;
-						var _didIteratorError6 = false;
-						var _iteratorError6 = undefined;
-
-						try {
-							for (var _iterator6 = thisPlayer.keys[thisKey][Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-								var thisValue = _step6.value;
-
-								if (thisValue == key) {
-									return thisPlayer.index;
-								}
-							}
-						} catch (err) {
-							_didIteratorError6 = true;
-							_iteratorError6 = err;
-						} finally {
-							try {
-								if (!_iteratorNormalCompletion6 && _iterator6.return) {
-									_iterator6.return();
-								}
-							} finally {
-								if (_didIteratorError6) {
-									throw _iteratorError6;
-								}
-							}
-						}
-					}
-				}
-			} catch (err) {
-				_didIteratorError5 = true;
-				_iteratorError5 = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion5 && _iterator5.return) {
-						_iterator5.return();
-					}
-				} finally {
-					if (_didIteratorError5) {
-						throw _iteratorError5;
-					}
-				}
-			}
-
-			return -1;
-		}
-	}, {
-		key: 'getPlayerButtonFromKey',
-		value: function getPlayerButtonFromKey(key) {
 			var _iteratorNormalCompletion7 = true;
 			var _didIteratorError7 = false;
 			var _iteratorError7 = undefined;
@@ -619,12 +758,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 								var thisValue = _step8.value;
 
 								if (thisValue == key) {
-									// Now we have a matching button value, check to see if it's in our mapped buttons, in which case we want to return the button number it matches to
-									if (typeof thisPlayer.gamepadMapping[thisKey] !== "undefined") {
-										return 'B' + thisPlayer.gamepadMapping[thisKey];
-									} else {
-										return thisKey;
-									}
+									return thisPlayer.index;
 								}
 							}
 						} catch (err) {
@@ -654,6 +788,69 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				} finally {
 					if (_didIteratorError7) {
 						throw _iteratorError7;
+					}
+				}
+			}
+
+			return -1;
+		}
+	}, {
+		key: 'getPlayerButtonFromKey',
+		value: function getPlayerButtonFromKey(key) {
+			var _iteratorNormalCompletion9 = true;
+			var _didIteratorError9 = false;
+			var _iteratorError9 = undefined;
+
+			try {
+				for (var _iterator9 = this.players[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+					var thisPlayer = _step9.value;
+
+					// Loop through all the keys assigned to this player
+					for (var thisKey in thisPlayer.keys) {
+						var _iteratorNormalCompletion10 = true;
+						var _didIteratorError10 = false;
+						var _iteratorError10 = undefined;
+
+						try {
+							for (var _iterator10 = thisPlayer.keys[thisKey][Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+								var thisValue = _step10.value;
+
+								if (thisValue == key) {
+									// Now we have a matching button value, check to see if it's in our mapped buttons, in which case we want to return the button number it matches to
+									if (typeof thisPlayer.gamepadMapping[thisKey] !== "undefined") {
+										return 'B' + thisPlayer.gamepadMapping[thisKey];
+									} else {
+										return thisKey;
+									}
+								}
+							}
+						} catch (err) {
+							_didIteratorError10 = true;
+							_iteratorError10 = err;
+						} finally {
+							try {
+								if (!_iteratorNormalCompletion10 && _iterator10.return) {
+									_iterator10.return();
+								}
+							} finally {
+								if (_didIteratorError10) {
+									throw _iteratorError10;
+								}
+							}
+						}
+					}
+				}
+			} catch (err) {
+				_didIteratorError9 = true;
+				_iteratorError9 = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion9 && _iterator9.return) {
+						_iterator9.return();
+					}
+				} finally {
+					if (_didIteratorError9) {
+						throw _iteratorError9;
 					}
 				}
 			}
@@ -690,6 +887,25 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 			return Object.keys(player.gamepadMapping).find(function (key) {
 				return player.gamepadMapping[key] == buttonID;
 			});
+		}
+
+		/**
+   * Given a player and a mapped button name, return the button ID that it resolves to, e.g. 'RC_S' (Right cluster, South - X on an xbox gamepad) = B0.
+   * This takes directions into account and will thus return 'LEFT' for LC_W, instead of the button ID that can be found in the gamepadMapping.
+   * @param {*} player 
+   * @param {*} mappedButton 
+   */
+
+	}, {
+		key: 'getUnmappedButton',
+		value: function getUnmappedButton(player, mappedButton) {
+			var buttonNo = player.gamepadMapping[mappedButton];
+			var dpadMapping = this.dpadMappings;
+			var direction = Object.keys(dpadMapping).find(function (key) {
+				return dpadMapping[key] == buttonNo;
+			});
+
+			return direction ? direction : 'B' + player.gamepadMapping[mappedButton];
 		}
 
 		// Keyboard functions
@@ -737,24 +953,24 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 		key: 'checkKeyboardInput',
 		value: function checkKeyboardInput() {
 			// Loop through players and check for keypresses
-			var _iteratorNormalCompletion9 = true;
-			var _didIteratorError9 = false;
-			var _iteratorError9 = undefined;
+			var _iteratorNormalCompletion11 = true;
+			var _didIteratorError11 = false;
+			var _iteratorError11 = undefined;
 
 			try {
-				for (var _iterator9 = this.players[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-					var thisPlayer = _step9.value;
+				for (var _iterator11 = this.players[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+					var thisPlayer = _step11.value;
 
 					// Loop through all the keys assigned to this player
 					for (var thisKey in thisPlayer.keys) {
 						var action = 0;
-						var _iteratorNormalCompletion10 = true;
-						var _didIteratorError10 = false;
-						var _iteratorError10 = undefined;
+						var _iteratorNormalCompletion12 = true;
+						var _didIteratorError12 = false;
+						var _iteratorError12 = undefined;
 
 						try {
-							for (var _iterator10 = thisPlayer.keys[thisKey][Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-								var thisValue = _step10.value;
+							for (var _iterator12 = thisPlayer.keys[thisKey][Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+								var thisValue = _step12.value;
 
 								// Check if the key is down
 								action = this.keys[thisValue].isDown ? 1 : action;
@@ -764,16 +980,16 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 							// Dpad
 						} catch (err) {
-							_didIteratorError10 = true;
-							_iteratorError10 = err;
+							_didIteratorError12 = true;
+							_iteratorError12 = err;
 						} finally {
 							try {
-								if (!_iteratorNormalCompletion10 && _iterator10.return) {
-									_iterator10.return();
+								if (!_iteratorNormalCompletion12 && _iterator12.return) {
+									_iterator12.return();
 								}
 							} finally {
-								if (_didIteratorError10) {
-									throw _iteratorError10;
+								if (_didIteratorError12) {
+									throw _iteratorError12;
 								}
 							}
 						}
@@ -813,16 +1029,16 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 					}
 				}
 			} catch (err) {
-				_didIteratorError9 = true;
-				_iteratorError9 = err;
+				_didIteratorError11 = true;
+				_iteratorError11 = err;
 			} finally {
 				try {
-					if (!_iteratorNormalCompletion9 && _iterator9.return) {
-						_iterator9.return();
+					if (!_iteratorNormalCompletion11 && _iterator11.return) {
+						_iterator11.return();
 					}
 				} finally {
-					if (_didIteratorError9) {
-						throw _iteratorError9;
+					if (_didIteratorError11) {
+						throw _iteratorError11;
 					}
 				}
 			}
@@ -852,6 +1068,11 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				thisPlayer.interaction.buffer.push(playerAction);
 				thisPlayer.interaction.last = playerAction;
 				thisPlayer.interaction.lastPressed = playerAction;
+
+				// Update timers
+				thisPlayer.timers[playerAction].pressed = this.scene.sys.time.now;
+				thisPlayer.timers[playerAction].released = 0;
+				thisPlayer.timers[playerAction].duration = 0;
 
 				// Update mapped button object
 				if (typeof this.dpadMappings[playerAction] !== "undefined") {
@@ -893,6 +1114,11 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				thisPlayer.interaction.released.push(playerAction);
 				thisPlayer.interaction.lastReleased = playerAction;
 
+				// Update timers
+				thisPlayer.timers[playerAction].released = this.scene.sys.time.now;
+				thisPlayer.timers[playerAction].duration = thisPlayer.timers[playerAction].released - thisPlayer.timers[playerAction].pressed;
+				delete thisPlayer.timers[playerAction]._tick;
+
 				// Update mapped button object
 				if (typeof this.dpadMappings[playerAction] !== "undefined") {
 					playerAction = 'B' + this.dpadMappings[playerAction];
@@ -917,23 +1143,23 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 		key: 'checkPointerInput',
 		value: function checkPointerInput() {
 			// Loop through players and check for button presses
-			var _iteratorNormalCompletion11 = true;
-			var _didIteratorError11 = false;
-			var _iteratorError11 = undefined;
+			var _iteratorNormalCompletion13 = true;
+			var _didIteratorError13 = false;
+			var _iteratorError13 = undefined;
 
 			try {
-				for (var _iterator11 = this.players[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-					var thisPlayer = _step11.value;
+				for (var _iterator13 = this.players[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+					var thisPlayer = _step13.value;
 
 					// Loop through all the keys assigned to this player
 					for (var thisKey in thisPlayer.keys) {
-						var _iteratorNormalCompletion12 = true;
-						var _didIteratorError12 = false;
-						var _iteratorError12 = undefined;
+						var _iteratorNormalCompletion14 = true;
+						var _didIteratorError14 = false;
+						var _iteratorError14 = undefined;
 
 						try {
-							for (var _iterator12 = thisPlayer.keys[thisKey][Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-								var thisValue = _step12.value;
+							for (var _iterator14 = thisPlayer.keys[thisKey][Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+								var thisValue = _step14.value;
 								// Each definition for this key action
 								if (['M1', 'M2', 'M3', 'M4', 'M5'].includes(thisValue[0])) {
 									// Check to see if button is pressed (stored in P1, can't have two mice...)
@@ -943,32 +1169,32 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 								}
 							}
 						} catch (err) {
-							_didIteratorError12 = true;
-							_iteratorError12 = err;
+							_didIteratorError14 = true;
+							_iteratorError14 = err;
 						} finally {
 							try {
-								if (!_iteratorNormalCompletion12 && _iterator12.return) {
-									_iterator12.return();
+								if (!_iteratorNormalCompletion14 && _iterator14.return) {
+									_iterator14.return();
 								}
 							} finally {
-								if (_didIteratorError12) {
-									throw _iteratorError12;
+								if (_didIteratorError14) {
+									throw _iteratorError14;
 								}
 							}
 						}
 					}
 				}
 			} catch (err) {
-				_didIteratorError11 = true;
-				_iteratorError11 = err;
+				_didIteratorError13 = true;
+				_iteratorError13 = err;
 			} finally {
 				try {
-					if (!_iteratorNormalCompletion11 && _iterator11.return) {
-						_iterator11.return();
+					if (!_iteratorNormalCompletion13 && _iterator13.return) {
+						_iterator13.return();
 					}
 				} finally {
-					if (_didIteratorError11) {
-						throw _iteratorError11;
+					if (_didIteratorError13) {
+						throw _iteratorError13;
 					}
 				}
 			}
@@ -994,11 +1220,18 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 			// Buttons
 			if (![12, 13, 14, 15].includes(button.index)) {
+				var playerAction = 'B' + button.index;
+
 				// Update the last button state
-				this.players[pad.index].interaction.pressed.push('B' + button.index);
-				this.players[pad.index].interaction.last = 'B' + button.index;
-				this.players[pad.index].interaction.lastPressed = 'B' + button.index;
-				this.players[pad.index].interaction.buffer.push('B' + button.index);
+				this.players[pad.index].interaction.pressed.push(playerAction);
+				this.players[pad.index].interaction.last = playerAction;
+				this.players[pad.index].interaction.lastPressed = playerAction;
+				this.players[pad.index].interaction.buffer.push(playerAction);
+
+				// Update timers
+				this.players[pad.index].timers[playerAction].pressed = this.scene.sys.time.now;
+				this.players[pad.index].timers[playerAction].released = 0;
+				this.players[pad.index].timers[playerAction].duration = 0;
 
 				// Update mapped button object
 				var mappedButton = this.getMappedButton(this.players[pad.index], button.index);
@@ -1022,6 +1255,11 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 					this.players[pad.index].interaction.lastPressed = direction;
 					this.players[pad.index].interaction.buffer.push(direction);
 					this.players[pad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+
+					// Update timers
+					this.players[pad.index].timers[direction].pressed = this.scene.sys.time.now;
+					this.players[pad.index].timers[direction].released = 0;
+					this.players[pad.index].timers[direction].duration = 0;
 
 					// Update mapped button object
 					var _mappedButton = this.getMappedButton(this.players[pad.index], button.index);
@@ -1052,9 +1290,15 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 			// Buttons
 			if (![12, 13, 14, 15].includes(button.index)) {
+				var playerAction = 'B' + button.index;
+
 				// Update the last button state
-				this.players[pad.index].interaction.released.push('B' + button.index);
-				this.players[pad.index].interaction.lastReleased = 'B' + button.index;
+				this.players[pad.index].interaction.released.push(playerAction);
+				this.players[pad.index].interaction.lastReleased = playerAction;
+
+				// Update timers
+				this.players[pad.index].timers[playerAction].released = this.scene.sys.time.now;
+				this.players[pad.index].timers[playerAction].duration = this.players[pad.index].timers[playerAction].released - this.players[pad.index].timers[playerAction].pressed;
 
 				// Update mapped button object
 				var mappedButton = this.getMappedButton(this.players[pad.index], button.index);
@@ -1074,6 +1318,10 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 					this.players[pad.index].interaction.released.push(direction);
 					this.players[pad.index].interaction.lastReleased = direction;
+
+					// Update timers
+					this.players[pad.index].timers[direction].released = this.scene.sys.time.now;
+					this.players[pad.index].timers[direction].duration = this.players[pad.index].timers[direction].released - this.players[pad.index].timers[direction].pressed;
 
 					// Update mapped button object
 					var _mappedButton2 = this.getMappedButton(this.players[pad.index], button.index);
@@ -1098,10 +1346,10 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				this.players[gamepad.index].internal.fakedpadBuffer.push(direction);
 				this.players[gamepad.index].internal.fakedpadPressed.push(direction);
 
-				var thisButton = new Phaser.Input.Gamepad.Button(gamepad, this.dpadMappings[direction]);
-				thisButton.value = 1;
-				thisButton.pressed = true;
-				thisButton.events.emit('down', gamepad, thisButton, 1);
+				var _thisButton2 = new Phaser.Input.Gamepad.Button(gamepad, this.dpadMappings[direction]);
+				_thisButton2.value = 1;
+				_thisButton2.pressed = true;
+				_thisButton2.events.emit('down', gamepad, _thisButton2, 1);
 				// this.systems.input.gamepad.emit('down', gamepad, thisButton, 1);
 			}
 		}
@@ -1114,34 +1362,34 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 		key: 'gamepadFakeDPadRelease',
 		value: function gamepadFakeDPadRelease(gamepad) {
 			if (this.players[gamepad.index].internal.fakedpadBuffer.length > 0) {
-				var _iteratorNormalCompletion13 = true;
-				var _didIteratorError13 = false;
-				var _iteratorError13 = undefined;
+				var _iteratorNormalCompletion15 = true;
+				var _didIteratorError15 = false;
+				var _iteratorError15 = undefined;
 
 				try {
 
-					for (var _iterator13 = this.players[gamepad.index].internal.fakedpadBuffer[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
-						var direction = _step13.value;
+					for (var _iterator15 = this.players[gamepad.index].internal.fakedpadBuffer[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
+						var direction = _step15.value;
 
 						this.players[gamepad.index].internal.fakedpadReleased = direction;
 
-						var thisButton = new Phaser.Input.Gamepad.Button(gamepad, this.dpadMappings[direction]);
-						thisButton.value = 0;
-						thisButton.pressed = false;
-						thisButton.events.emit('up', gamepad, thisButton, 0);
+						var _thisButton3 = new Phaser.Input.Gamepad.Button(gamepad, this.dpadMappings[direction]);
+						_thisButton3.value = 0;
+						_thisButton3.pressed = false;
+						_thisButton3.events.emit('up', gamepad, _thisButton3, 0);
 						// this.systems.input.gamepad.emit('up', gamepad, thisButton, 0);
 					}
 				} catch (err) {
-					_didIteratorError13 = true;
-					_iteratorError13 = err;
+					_didIteratorError15 = true;
+					_iteratorError15 = err;
 				} finally {
 					try {
-						if (!_iteratorNormalCompletion13 && _iterator13.return) {
-							_iterator13.return();
+						if (!_iteratorNormalCompletion15 && _iterator15.return) {
+							_iterator15.return();
 						}
 					} finally {
-						if (_didIteratorError13) {
-							throw _iteratorError13;
+						if (_didIteratorError15) {
+							throw _iteratorError15;
 						}
 					}
 				}
@@ -1158,13 +1406,13 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 		key: 'checkGamepadInput',
 		value: function checkGamepadInput() {
 			// Check for gamepad input
-			var _iteratorNormalCompletion14 = true;
-			var _didIteratorError14 = false;
-			var _iteratorError14 = undefined;
+			var _iteratorNormalCompletion16 = true;
+			var _didIteratorError16 = false;
+			var _iteratorError16 = undefined;
 
 			try {
-				for (var _iterator14 = this.gamepads[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
-					var thisGamepad = _step14.value;
+				for (var _iterator16 = this.gamepads[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
+					var thisGamepad = _step16.value;
 
 
 					// Set up a player if we don't have one, presumably due to race conditions in detecting gamepads
@@ -1261,16 +1509,16 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 					}
 				}
 			} catch (err) {
-				_didIteratorError14 = true;
-				_iteratorError14 = err;
+				_didIteratorError16 = true;
+				_iteratorError16 = err;
 			} finally {
 				try {
-					if (!_iteratorNormalCompletion14 && _iterator14.return) {
-						_iterator14.return();
+					if (!_iteratorNormalCompletion16 && _iterator16.return) {
+						_iterator16.return();
 					}
 				} finally {
-					if (_didIteratorError14) {
-						throw _iteratorError14;
+					if (_didIteratorError16) {
+						throw _iteratorError16;
 					}
 				}
 			}
@@ -1380,6 +1628,22 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				this.players[0].interaction.lastReleased = action;
 				this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
 			}
+		}
+
+		/**
+      * Create new button combo.
+   * Combos extend Phaser's keyboard combo and mimic their functionality for gamepad/player combinations.
+   * If you requrie a keyboard entered combo, use the native Phaser.Input.Keyboard.KeyboardPlugin.createCombo function.
+   * 
+   * @param {player} player - A player object. If more than one player should be able to execute the combo, you should create multiple buttonCombo instances.
+      * @param {(object[])} buttons - An array of buttons that comprise this combo. Use button IDs, mapped buttons or directions, e.g. ['UP', 'UP', 'DOWN', 'DOWN', 'LEFT', 'RIGHT', 'LEFT', 'RIGHT', 'RC_E', 'RC_S']
+      * @param {Phaser.Types.Input.Keyboard.KeyComboConfig} [config] - A Key Combo configuration object.
+      */
+
+	}, {
+		key: 'createButtonCombo',
+		value: function createButtonCombo(player, buttons, config) {
+			return new _ButtonCombo2.default(this, player, buttons, config);
 		}
 
 		/**
@@ -1532,35 +1796,38 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 			}
 
 			debug.players = [];
-			var _iteratorNormalCompletion15 = true;
-			var _didIteratorError15 = false;
-			var _iteratorError15 = undefined;
+			var _iteratorNormalCompletion17 = true;
+			var _didIteratorError17 = false;
+			var _iteratorError17 = undefined;
 
 			try {
-				for (var _iterator15 = this.players[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
-					var _debug$players$push;
+				for (var _iterator17 = this.players[Symbol.iterator](), _step17; !(_iteratorNormalCompletion17 = (_step17 = _iterator17.next()).done); _iteratorNormalCompletion17 = true) {
+					var thisPlayer = _step17.value;
 
-					var thisPlayer = _step15.value;
-
-					debug.players.push((_debug$players$push = {
+					debug.players.push({
 						'interaction': thisPlayer.interaction,
 						'interaction_mapped': thisPlayer.interaction_mapped,
 						//				'device': thisPlayer.interaction.device,
 						'buttons': thisPlayer.buttons,
-						'buttons_mapped': thisPlayer.buttons_mapped
-					}, _defineProperty(_debug$players$push, 'interaction_mapped', thisPlayer.interaction_mapped), _defineProperty(_debug$players$push, 'pointer', thisPlayer.pointer), _defineProperty(_debug$players$push, 'direction', thisPlayer.direction), _defineProperty(_debug$players$push, 'direction_secondary', thisPlayer.direction_secondary), _defineProperty(_debug$players$push, 'keys', thisPlayer.keys), _debug$players$push));
+						'buttons_mapped': thisPlayer.buttons_mapped,
+						'timers': thisPlayer.timers,
+						'pointer': thisPlayer.pointer,
+						'direction': thisPlayer.direction,
+						'direction_secondary': thisPlayer.direction_secondary,
+						'keys': thisPlayer.keys
+					});
 				}
 			} catch (err) {
-				_didIteratorError15 = true;
-				_iteratorError15 = err;
+				_didIteratorError17 = true;
+				_iteratorError17 = err;
 			} finally {
 				try {
-					if (!_iteratorNormalCompletion15 && _iterator15.return) {
-						_iterator15.return();
+					if (!_iteratorNormalCompletion17 && _iterator17.return) {
+						_iterator17.return();
 					}
 				} finally {
-					if (_didIteratorError15) {
-						throw _iteratorError15;
+					if (_didIteratorError17) {
+						throw _iteratorError17;
 					}
 				}
 			}
@@ -1700,6 +1967,7 @@ var controlManager = function () {
                     'TIMESTAMP': 0
                 },
                 'buttons': {},
+                'timers': {},
                 'gamepadMapping': {
                     RC_S: 0,
                     RC_E: 1,
@@ -1800,6 +2068,24 @@ var controlManager = function () {
             for (var i = 0; i <= numberOfButtons; i++) {
                 controls.buttons['B' + i] = 0;
                 controls.keys['B' + i] = [];
+            }
+
+            // Add timers 
+            for (var _i = 0; _i <= numberOfButtons; _i++) {
+                controls.timers['B' + _i] = {
+                    'pressed': 0,
+                    'released': 0,
+                    'duration': 0
+                };
+            }
+            var _arr = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT'];
+            for (var _i2 = 0; _i2 < _arr.length; _i2++) {
+                var thisDirection = _arr[_i2];
+                controls.timers[thisDirection] = {
+                    'pressed': 0,
+                    'released': 0,
+                    'duration': 0
+                };
             }
 
             controls.setPosition = function (x, y) {
@@ -1946,6 +2232,231 @@ module.exports = {
         TOUCH: 17
     }
 };
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _AdvanceKeyCombo = __webpack_require__(8);
+
+var _AdvanceKeyCombo2 = _interopRequireDefault(_AdvanceKeyCombo);
+
+var _ResetKeyCombo = __webpack_require__(9);
+
+var _ResetKeyCombo2 = _interopRequireDefault(_ResetKeyCombo);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ButtonCombo = function (_Phaser$Input$Keyboar) {
+    _inherits(ButtonCombo, _Phaser$Input$Keyboar);
+
+    function ButtonCombo(mergedInput, player, buttons, config) {
+        _classCallCheck(this, ButtonCombo);
+
+        var _this = _possibleConstructorReturn(this, (ButtonCombo.__proto__ || Object.getPrototypeOf(ButtonCombo)).call(this, mergedInput.systems.input.keyboard, buttons, config));
+
+        _this.player = player;
+        _this.mergedInput = mergedInput;
+        _this.keyCodes = buttons; // KeyCombo expects this to be an array of keycodes, we'll be checking against button names
+
+        mergedInput.events.on('gamepad_buttondown', _this.onButtonDown, _this);
+        _this.current = _this.keyCodes[0];
+        return _this;
+    }
+
+    _createClass(ButtonCombo, [{
+        key: 'onButtonDown',
+        value: function onButtonDown(event) {
+            if (this.matched || !this.enabled) {
+                return;
+            }
+
+            var matched = this.ProcessButtonCombo(event, this);
+            if (matched) {
+                this.mergedInput.eventEmitter.emit('mergedInput', { combo: this, player: this.player, action: 'Button combo matched' });
+                this.mergedInput.events.emit('buttoncombomatch', { player: this.player, combo: this });
+
+                if (this.resetOnMatch) {
+                    (0, _ResetKeyCombo2.default)(this);
+                } else if (this.deleteOnMatch) {
+                    this.destroy();
+                }
+            }
+        }
+    }, {
+        key: 'ProcessButtonCombo',
+        value: function ProcessButtonCombo(event, combo) {
+            // Don't check buttons on a different pad
+            if (combo.player.index !== event.player) {
+                return false;
+            }
+
+            // Check matched
+            if (combo.matched) {
+                return true;
+            }
+
+            // Compare the current action with the button pressed
+            var buttonMatch = false;
+            if (event.button === combo.current) {
+                buttonMatch = true;
+            }
+
+            var mappedButton = this.mergedInput.getMappedButton(combo.player, event.button);
+            if (mappedButton === combo.current) {
+                buttonMatch = true;
+            }
+
+            var unMappedButton = this.mergedInput.getUnmappedButton(combo.player, mappedButton);
+            if (unMappedButton === combo.current) {
+                buttonMatch = true;
+            }
+
+            var comboMatched = false;
+            var keyMatched = false;
+
+            if (buttonMatch) {
+                //  Button was correct
+
+                if (combo.index > 0 && combo.maxKeyDelay > 0) {
+                    //  We have to check to see if the delay between
+                    //  the new key and the old one was too long (if enabled)
+
+                    var timeLimit = combo.timeLastMatched + combo.maxKeyDelay;
+
+                    //  Check if they pressed it in time or not
+                    if (event.timeStamp <= timeLimit) {
+                        keyMatched = true;
+                        comboMatched = (0, _AdvanceKeyCombo2.default)(event, combo);
+                    }
+                } else {
+                    keyMatched = true;
+
+                    //  We don't check the time for the first key pressed, so just advance it
+                    comboMatched = (0, _AdvanceKeyCombo2.default)(event, combo);
+                }
+            }
+
+            if (!keyMatched && combo.resetOnWrongKey) {
+                //  Wrong key was pressed
+                combo.index = 0;
+                combo.current = combo.keyCodes[0];
+            }
+
+            if (comboMatched) {
+                combo.timeLastMatched = event.timeStamp;
+                combo.matched = true;
+                combo.timeMatched = event.timeStamp;
+            }
+
+            return comboMatched;
+        }
+    }, {
+        key: 'destroy',
+        value: function destroy() {
+            this.mergedInput.events.off('gamepad_buttondown', this.onButtonDown);
+            _get(ButtonCombo.prototype.__proto__ || Object.getPrototypeOf(ButtonCombo.prototype), 'destroy', this).call(this);
+        }
+    }]);
+
+    return ButtonCombo;
+}(Phaser.Input.Keyboard.KeyCombo);
+
+exports.default = ButtonCombo;
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2013-2023 Photon Storm Ltd.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
+ */
+
+/**
+ * Used internally by the KeyCombo class.
+ * Return `true` if it reached the end of the combo, `false` if not.
+ *
+ * @function Phaser.Input.Keyboard.AdvanceKeyCombo
+ * @private
+ * @since 3.0.0
+ *
+ * @param {KeyboardEvent} event - The native Keyboard Event.
+ * @param {Phaser.Input.Keyboard.KeyCombo} combo - The KeyCombo object to advance.
+ *
+ * @return {boolean} `true` if it reached the end of the combo, `false` if not.
+ */
+var AdvanceKeyCombo = function (event, combo)
+{
+    combo.timeLastMatched = event.timeStamp;
+    combo.index++;
+
+    if (combo.index === combo.size)
+    {
+        return true;
+    }
+    else
+    {
+        combo.current = combo.keyCodes[combo.index];
+        return false;
+    }
+};
+
+module.exports = AdvanceKeyCombo;
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+/**
+ * @author       Richard Davey <rich@photonstorm.com>
+ * @copyright    2013-2023 Photon Storm Ltd.
+ * @license      {@link https://opensource.org/licenses/MIT|MIT License}
+ */
+
+/**
+ * Used internally by the KeyCombo class.
+ *
+ * @function Phaser.Input.Keyboard.ResetKeyCombo
+ * @private
+ * @since 3.0.0
+ *
+ * @param {Phaser.Input.Keyboard.KeyCombo} combo - The KeyCombo to reset.
+ *
+ * @return {Phaser.Input.Keyboard.KeyCombo} The KeyCombo.
+ */
+var ResetKeyCombo = function (combo)
+{
+    combo.current = combo.keyCodes[0];
+    combo.index = 0;
+    combo.timeLastMatched = 0;
+    combo.matched = false;
+    combo.timeMatched = 0;
+
+    return combo;
+};
+
+module.exports = ResetKeyCombo;
+
 
 /***/ })
 /******/ ]);
