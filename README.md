@@ -182,6 +182,9 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
+v1.8.2 - 2023-11-13  
+Bugfix: Gamepad button release was not freeing the timer's tick var.  
+
 v1.8.1 - 2023-10-29  
 Added mouse pointers to checkDown function.  
 Fixed issue with generic player helper functions when player not fully initialised.  
