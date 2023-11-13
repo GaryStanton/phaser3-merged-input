@@ -1310,6 +1310,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				// Update timers
 				this.players[pad.index].timers[playerAction].released = this.scene.sys.time.now;
 				this.players[pad.index].timers[playerAction].duration = this.players[pad.index].timers[playerAction].released - this.players[pad.index].timers[playerAction].pressed;
+				delete this.players[pad.index].timers[playerAction]._tick;
 
 				// Update mapped button object
 				var mappedButton = this.getMappedButton(this.players[pad.index], button.index);
@@ -1333,6 +1334,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 					// Update timers
 					this.players[pad.index].timers[direction].released = this.scene.sys.time.now;
 					this.players[pad.index].timers[direction].duration = this.players[pad.index].timers[direction].released - this.players[pad.index].timers[direction].pressed;
+					delete this.players[pad.index].timers[direction]._tick;
 
 					// Update mapped button object
 					var _mappedButton2 = this.getMappedButton(this.players[pad.index], button.index);
