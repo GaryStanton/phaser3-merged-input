@@ -785,6 +785,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			// Update timers
 			this.players[pad.index].timers[playerAction].released = this.scene.sys.time.now;
 			this.players[pad.index].timers[playerAction].duration = this.players[pad.index].timers[playerAction].released - this.players[pad.index].timers[playerAction].pressed;
+			delete this.players[pad.index].timers[playerAction]._tick;
 
 			// Update mapped button object
 			let mappedButton = this.getMappedButton(this.players[pad.index], button.index);
@@ -806,6 +807,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			// Update timers
 			this.players[pad.index].timers[direction].released = this.scene.sys.time.now;
 			this.players[pad.index].timers[direction].duration = this.players[pad.index].timers[direction].released - this.players[pad.index].timers[direction].pressed;
+			delete this.players[pad.index].timers[direction]._tick;
 
 			// Update mapped button object
 			let mappedButton = this.getMappedButton(this.players[pad.index], button.index);
