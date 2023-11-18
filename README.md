@@ -182,6 +182,9 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
+v1.8.3 - 2023-11-18  
+Bugfix: When using a joypad that maps direction buttons to the left axis, the fake DPad functionality was not mimicking button number value changes for `buttons` and `buttons_mapped`.  
+
 v1.8.2 - 2023-11-13  
 Bugfix: Gamepad button release was not freeing the timer's tick var.  
 

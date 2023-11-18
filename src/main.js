@@ -833,7 +833,6 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisButton.value = 1;
 			thisButton.pressed = true;
 			thisButton.events.emit('down', gamepad, thisButton, 1)
-			// this.systems.input.gamepad.emit('down', gamepad, thisButton, 1);
 		}
 	}
 
@@ -850,7 +849,6 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 				thisButton.value = 0;
 				thisButton.pressed = false;
 				thisButton.events.emit('up', gamepad, thisButton, 0)
-				// this.systems.input.gamepad.emit('up', gamepad, thisButton, 0);
 			}
 
 			this.players[gamepad.index].internal.fakedpadBuffer = [];
@@ -956,12 +954,30 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 				for (var b = 0; b < thisGamepad.buttons.length; b++) {
 					let button = thisGamepad.buttons[b];
 					this.players[thisGamepad.index].buttons['B' + b] = button.value;
-
 					// Get mapped name for this button number and artificially update the relevant buttons_mapped key
 					let mappedButton = this.getMappedButton(this.players[thisGamepad.index], b);
 					if (typeof mappedButton !== "undefined") {
 						this.players[thisGamepad.index].buttons_mapped[mappedButton] = button.value;
 					} 
+				}
+
+				// If we're faking the d-pad, we won't have the extra buttons so we'll have to manually update the button objects
+				if (thisGamepad.fakedpad) {
+					if (direction == '') {
+						this.players[thisGamepad.index].buttons['B12'] = 0;
+						this.players[thisGamepad.index].buttons['B13'] = 0;
+						this.players[thisGamepad.index].buttons['B14'] = 0;
+						this.players[thisGamepad.index].buttons['B15'] = 0;
+						this.players[thisGamepad.index].buttons_mapped[this.getMappedButton(this.players[thisGamepad.index], 'B12')] = 0;
+						this.players[thisGamepad.index].buttons_mapped[this.getMappedButton(this.players[thisGamepad.index], 'B13')] = 0;
+						this.players[thisGamepad.index].buttons_mapped[this.getMappedButton(this.players[thisGamepad.index], 'B14')] = 0;
+						this.players[thisGamepad.index].buttons_mapped[this.getMappedButton(this.players[thisGamepad.index], 'B15')] = 0;
+					}
+					else {
+						this.players[thisGamepad.index].buttons['B' + this.dpadMappings[direction]] = 1;
+						let mappedButton = this.getMappedButton(this.players[thisGamepad.index], 'B' + this.dpadMappings[direction]);
+						this.players[thisGamepad.index].buttons_mapped[mappedButton] = 1;
+					}
 				}
 			}
 		}
