@@ -1619,6 +1619,11 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				this.players[0].interaction.lastPressed = action;
 				this.players[0].interaction.buffer.push(action);
 				this.players[0].pointer.TIMESTAMP = pointer.moveTime;
+
+				// Update timers
+				this.players[0].timers[action].pressed = this.scene.sys.time.now;
+				this.players[0].timers[action].released = 0;
+				this.players[0].timers[action].duration = 0;
 			}
 		}
 
@@ -1655,6 +1660,11 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 				this.players[0].interaction.released.push(action);
 				this.players[0].interaction.lastReleased = action;
 				this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
+
+				// Update timers
+				this.players[0].timers[action].released = this.scene.sys.time.now;
+				this.players[0].timers[action].duration = this.players[0].timers[action].released - this.players[0].timers[action].pressed;
+				delete this.players[0].timers[action]._tick;
 			}
 		}
 

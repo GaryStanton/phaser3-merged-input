@@ -182,6 +182,9 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
+v1.8.4 - 2023-11-26
+Bugfix: Mouse pointer checkDown function timers were handled incorrrectly.
+
 v1.8.3 - 2023-11-18  
 Bugfix: When using a joypad that maps direction buttons to the left axis, the fake DPad functionality was not mimicking button number value changes for `buttons` and `buttons_mapped`.  
 
