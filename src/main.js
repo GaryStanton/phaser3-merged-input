@@ -643,7 +643,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 		if (playerIndex > -1 && playerAction != '') {
 			let thisPlayer = this.getPlayer(playerIndex);
-			this.eventEmitter.emit('mergedInput', { device: 'keyboard', value: 1, player: playerIndex, action: keyCode, state: 'DOWN' });
+			this.eventEmitter.emit('mergedInput', { device: 'keyboard', value: 1, player: playerIndex, action: keyCode, state: 'UP' });
 			this.events.emit('keyboard_keyup', { player: playerIndex, key: keyCode });
 
 			thisPlayer.setDevice('keyboard');
