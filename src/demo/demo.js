@@ -108,7 +108,7 @@ export default class Demo extends Phaser.Scene {
          */
         this.input.keyboard.createCombo([38, 38, 40, 40, 37, 39, 37, 39, 66, 65], { resetOnMatch: true }).name = 'Konami code - Keyboard';
         this.inputController.mergedInput.createButtonCombo(this.player1, ['UP', 'UP', 'DOWN', 'DOWN', 'LEFT', 'RIGHT', 'LEFT', 'RIGHT', 'RC_E', 'RC_S'], { resetOnMatch: true }).name = 'Konami code - Gamepad';
-        this.inputController.mergedInput.createButtonCombo(this.player1, ['B12', 'B13'], { resetOnMatch: true }).name = 'Button ID test';
+        this.inputController.mergedInput.createButtonCombo(this.player1, ['B12', 'B13'], { resetOnMatch: true, maxKeyDelay: 1000, }).name = 'Button ID test';
 
         this.input.keyboard.on('keycombomatch', event => {
             this.player1Combos.setText(`KEY COMBO: ${event.name}`)
@@ -172,6 +172,8 @@ export default class Demo extends Phaser.Scene {
             'Player 1', 'Gamepad: ' + (typeof this.player1.gamepad.index === 'undefined' ? 'Press a button to connect' : this.player1.gamepad.id),
             'Directions: ' + JSON.stringify(this.player1.direction),
             'Buttons: ' + JSON.stringify(this.player1.buttons),
+            'Mouse: ' + JSON.stringify(this.player1.pointer),
+            'Timers: ' + JSON.stringify(this.player1.timers),
             'Interaction: ' + JSON.stringify(this.player1.interaction),
             `isDown: ${this.player1.isDown(Object.keys(this.player1.buttons_mapped))}, ${this.player1.isDown(Object.keys(this.player1.buttons))}`,
             'Internal: ' + JSON.stringify(this.player1.internal)
@@ -180,6 +182,8 @@ export default class Demo extends Phaser.Scene {
             'Player 2', 'Gamepad: ' + (typeof this.player2.gamepad.index === 'undefined' ? 'Press a button to connect' : this.player2.gamepad.id),
             'Directions: ' + JSON.stringify(this.player2.direction),
             'Buttons: ' + JSON.stringify(this.player2.buttons),
+            'Mouse: ' + JSON.stringify(this.player2.pointer),
+            'Timers: ' + JSON.stringify(this.player2.timers),
             'Interaction: ' + JSON.stringify(this.player2.interaction),
             `isDown: ${this.player2.isDown(Object.keys(this.player2.buttons_mapped))}, ${this.player2.isDown(Object.keys(this.player2.buttons))}`,
             'Internal: ' + JSON.stringify(this.player2.internal)
@@ -239,7 +243,7 @@ export default class Demo extends Phaser.Scene {
         */
 
         // Here we check if certain buttons are held down for a given duration in this update step.
-        if (this.player1.checkDown(['LEFT'], 1000, true)) {
+        if (this.player1.checkDown(['M1','LEFT'], 1000, false)) {
             console.log(`generic checkDown: LEFT`)
         }
 

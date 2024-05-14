@@ -33,6 +33,9 @@ export default class ButtonCombo extends Phaser.Input.Keyboard.KeyCombo {
     }
 
     ProcessButtonCombo (event, combo) {
+        // Set a timestamp from the gamepad
+        event.timeStamp = this.mergedInput.systems.time.now
+
         // Don't check buttons on a different pad
         if (combo.player.index !== event.player) { 
             return false;
