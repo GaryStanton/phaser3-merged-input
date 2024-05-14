@@ -182,6 +182,10 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
+v1.8.5 - 2024-05-15
+Bugfix: Gamepad button combo events were missing timestamps.
+Bugfix: Incorrect keyboard event states firing. (Thanks to @brntns)
+
 v1.8.4 - 2023-11-26
 Bugfix: Mouse pointer checkDown function timers were handled incorrrectly.
 

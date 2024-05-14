@@ -1118,7 +1118,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 			if (playerIndex > -1 && playerAction != '') {
 				var thisPlayer = this.getPlayer(playerIndex);
-				this.eventEmitter.emit('mergedInput', { device: 'keyboard', value: 1, player: playerIndex, action: keyCode, state: 'DOWN' });
+				this.eventEmitter.emit('mergedInput', { device: 'keyboard', value: 1, player: playerIndex, action: keyCode, state: 'UP' });
 				this.events.emit('keyboard_keyup', { player: playerIndex, key: keyCode });
 
 				thisPlayer.setDevice('keyboard');
@@ -2351,6 +2351,9 @@ var ButtonCombo = function (_Phaser$Input$Keyboar) {
     }, {
         key: 'ProcessButtonCombo',
         value: function ProcessButtonCombo(event, combo) {
+            // Set a timestamp from the gamepad
+            event.timeStamp = this.mergedInput.systems.time.now;
+
             // Don't check buttons on a different pad
             if (combo.player.index !== event.player) {
                 return false;
