@@ -167,6 +167,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 			'RIGHT': 15
 		};
 
+		_this.axisThreshold = _this.axisThreshold;
+
 		_this.controlManager = new _controlManager2.default();
 		return _this;
 	}
@@ -316,7 +318,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
    * Clear the interaction buffer for the given player
    * In the case of 'fake' DPad presses, we're using some convoluted buffers to keep the 'pressed' and 'released' values around for an extra tick
    * As they're created in this update loop, they're otherwise cleared before the consumer can use them.
-   * @param {*} thisPlayer 
+   * @param {*} thisPlayer
    */
 
 	}, {
@@ -376,6 +378,19 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 			for (var thisButton in this.players[thisGamepad.index].gamepadMapping) {
 				this.players[thisGamepad.index].buttons_mapped[thisButton] = 0;
 			}
+		}
+
+		/**
+   * Set a threshold (between 0 and 1) below which analog stick input will be ignored
+   * @param {*} value
+   * @returns
+   */
+
+	}, {
+		key: 'setAxisThreshold',
+		value: function setAxisThreshold(value) {
+			this.axisThreshold = value;
+			return this;
 		}
 	}, {
 		key: 'refreshGamepads',
@@ -463,7 +478,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 		/**
    * Add helper functions to the player object
-   * @param {*} player 
+   * @param {*} player
    */
 
 	}, {
@@ -871,8 +886,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 		/**
    * Return an array of actions that a player may use
-   * @param {number} player 
-   * @returns 
+   * @param {number} player
+   * @returns
    */
 
 	}, {
@@ -887,8 +902,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 
 		/**
    * Given a player and a button ID, return the mapped button name, e.g. 0 = 'RC_S' (Right cluster, South - X on an xbox gamepad)
-   * @param {*} player 
-   * @param {*} buttonID 
+   * @param {*} player
+   * @param {*} buttonID
    */
 
 	}, {
@@ -903,8 +918,8 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 		/**
    * Given a player and a mapped button name, return the button ID that it resolves to, e.g. 'RC_S' (Right cluster, South - X on an xbox gamepad) = B0.
    * This takes directions into account and will thus return 'LEFT' for LC_W, instead of the button ID that can be found in the gamepadMapping.
-   * @param {*} player 
-   * @param {*} mappedButton 
+   * @param {*} player
+   * @param {*} mappedButton
    */
 
 	}, {
@@ -1434,7 +1449,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 					var direction = '';
 
 					// Directions
-					if (thisGamepad.leftStick.y < -0.5) {
+					if (thisGamepad.leftStick.y < -this.axisThreshold) {
 						this.players[thisGamepad.index].direction.UP = Math.abs(thisGamepad.leftStick.y);
 						this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
 
@@ -1442,7 +1457,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 							this.gamepadFakeDPadPress(thisGamepad, 'UP');
 							direction = 'UP';
 						}
-					} else if (thisGamepad.leftStick.y > 0.5) {
+					} else if (thisGamepad.leftStick.y > this.axisThreshold) {
 						this.players[thisGamepad.index].direction.DOWN = thisGamepad.leftStick.y;
 						this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
 
@@ -1456,7 +1471,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 						this.players[thisGamepad.index].direction.DOWN = thisGamepad.down ? 1 : 0;
 					}
 
-					if (thisGamepad.leftStick.x < -0.5) {
+					if (thisGamepad.leftStick.x < -this.axisThreshold) {
 						this.players[thisGamepad.index].direction.LEFT = Math.abs(thisGamepad.leftStick.x);
 						this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
 
@@ -1464,7 +1479,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 							this.gamepadFakeDPadPress(thisGamepad, 'LEFT');
 							direction = 'LEFT';
 						}
-					} else if (thisGamepad.leftStick.x > 0.5) {
+					} else if (thisGamepad.leftStick.x > this.axisThreshold) {
 						this.players[thisGamepad.index].direction.RIGHT = thisGamepad.leftStick.x;
 						this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
 
@@ -1483,10 +1498,10 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 					}
 
 					// Secondary
-					if (thisGamepad.rightStick.y < -0.5) {
+					if (thisGamepad.rightStick.y < -this.axisThreshold) {
 						this.players[thisGamepad.index].direction_secondary.UP = Math.abs(thisGamepad.rightStick.y);
 						this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
-					} else if (thisGamepad.rightStick.y > 0.5) {
+					} else if (thisGamepad.rightStick.y > this.axisThreshold) {
 						this.players[thisGamepad.index].direction_secondary.DOWN = thisGamepad.rightStick.y;
 						this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
 					} else {
@@ -1494,10 +1509,10 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
 						this.players[thisGamepad.index].direction_secondary.DOWN = 0;
 					}
 
-					if (thisGamepad.rightStick.x < -0.5) {
+					if (thisGamepad.rightStick.x < -this.axisThreshold) {
 						this.players[thisGamepad.index].direction_secondary.LEFT = Math.abs(thisGamepad.rightStick.x);
 						this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
-					} else if (thisGamepad.rightStick.x > 0.5) {
+					} else if (thisGamepad.rightStick.x > this.axisThreshold) {
 						this.players[thisGamepad.index].direction_secondary.RIGHT = thisGamepad.rightStick.x;
 						this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
 					} else {
@@ -1672,7 +1687,7 @@ var MergedInput = function (_Phaser$Plugins$Scene) {
       * Create new button combo.
    * Combos extend Phaser's keyboard combo and mimic their functionality for gamepad/player combinations.
    * If you requrie a keyboard entered combo, use the native Phaser.Input.Keyboard.KeyboardPlugin.createCombo function.
-   * 
+   *
    * @param {player} player - A player object. If more than one player should be able to execute the combo, you should create multiple buttonCombo instances.
       * @param {(object[])} buttons - An array of buttons that comprise this combo. Use button IDs, mapped buttons or directions, e.g. ['UP', 'UP', 'DOWN', 'DOWN', 'LEFT', 'RIGHT', 'LEFT', 'RIGHT', 'RC_E', 'RC_S']
       * @param {Phaser.Types.Input.Keyboard.KeyComboConfig} [config] - A Key Combo configuration object.

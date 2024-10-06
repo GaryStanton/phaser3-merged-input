@@ -32,6 +32,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			'RIGHT': 15
 		}
 
+		this.axisThreshold = this.axisThreshold;
+
 		this.controlManager = new controlManager()
 	}
 
@@ -113,7 +115,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * Clear the interaction buffer for the given player
 	 * In the case of 'fake' DPad presses, we're using some convoluted buffers to keep the 'pressed' and 'released' values around for an extra tick
 	 * As they're created in this update loop, they're otherwise cleared before the consumer can use them.
-	 * @param {*} thisPlayer 
+	 * @param {*} thisPlayer
 	 */
 	clearBuffer(thisPlayer) {
 		if (thisPlayer.interaction.pressed.length > 0 && thisPlayer.internal.fakedpadPressed.length == 0) {
@@ -153,7 +155,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		if (typeof this.players[thisGamepad.index] === 'undefined') {
 			this.addPlayer();
 		}
-		
+
 		let gamepadID = thisGamepad.id.toLowerCase();
 		this.players[thisGamepad.index].gamepad = thisGamepad;
 
@@ -164,6 +166,16 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		for (let thisButton in this.players[thisGamepad.index].gamepadMapping) {
 			this.players[thisGamepad.index].buttons_mapped[thisButton] = 0;
 		}
+	}
+
+	/**
+	 * Set a threshold (between 0 and 1) below which analog stick input will be ignored
+	 * @param {*} value
+	 * @returns
+	 */
+	setAxisThreshold(value) {
+		this.axisThreshold = value;
+		return this;
 	}
 
 
@@ -210,11 +222,11 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 				this.systems.input.on('pointermove', function (pointer) {
 					this.pointerMove(pointer);
 				}, this);
-	
+
 				this.systems.input.on('pointerdown', function (pointer) {
 					this.pointerDown(pointer);
 				}, this);
-	
+
 				this.systems.input.on('pointerup', function (pointer) {
 					this.pointerUp(pointer);
 				}, this);
@@ -226,7 +238,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 	/**
 	 * Add helper functions to the player object
-	 * @param {*} player 
+	 * @param {*} player
 	 */
 	addPlayerHelperFunctions(player) {
 		/**
@@ -309,7 +321,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		player.interaction.checkDown = (button, duration, includeFirst) => {
 			if (includeFirst === undefined) { includeFirst = false; }
 			if (duration === undefined) { duration = 0; }
-			
+
 			let matchedButtons = [];
 			let downButtons = player.interaction.isDown(button)
 			if (downButtons.length) {
@@ -321,7 +333,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 							matchedButtons.push(thisButton);
 						}
 					}
-	
+
 					let t = Phaser.Math.Snap.Floor(this.scene.sys.time.now - player.timers[thisButton].pressed, duration);
 					if (t > player.timers[thisButton]._tick) {
 						this.game.events.once(Phaser.Core.Events.POST_STEP, ()=>{
@@ -412,7 +424,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			let matchedButtons = [...interaction, ...interaction_mapped];
 			return matchedButtons.length ? matchedButtons : false
 		}
-		
+
 
 		player.setDevice = (device) => {
 			if (player.interaction.device != device) {
@@ -472,8 +484,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 	/**
 	 * Return an array of actions that a player may use
-	 * @param {number} player 
-	 * @returns 
+	 * @param {number} player
+	 * @returns
 	 */
 	getPlayerActions(player) {
 		let actions = ['UP', 'DOWN', 'LEFT', 'RIGHT', 'ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT'];
@@ -485,8 +497,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 	/**
 	 * Given a player and a button ID, return the mapped button name, e.g. 0 = 'RC_S' (Right cluster, South - X on an xbox gamepad)
-	 * @param {*} player 
-	 * @param {*} buttonID 
+	 * @param {*} player
+	 * @param {*} buttonID
 	 */
 	getMappedButton(player, buttonID) {
 		buttonID = buttonID.toString().replace(/\D/g, '');
@@ -496,8 +508,8 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	/**
 	 * Given a player and a mapped button name, return the button ID that it resolves to, e.g. 'RC_S' (Right cluster, South - X on an xbox gamepad) = B0.
 	 * This takes directions into account and will thus return 'LEFT' for LC_W, instead of the button ID that can be found in the gamepadMapping.
-	 * @param {*} player 
-	 * @param {*} mappedButton 
+	 * @param {*} player
+	 * @param {*} mappedButton
 	 */
 	getUnmappedButton(player, mappedButton) {
 		let buttonNo = player.gamepadMapping[mappedButton];
@@ -649,7 +661,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisPlayer.setDevice('keyboard');
 			thisPlayer.interaction.released.push(playerAction);
 			thisPlayer.interaction.lastReleased = playerAction;
-			
+
 			// Update timers
 			thisPlayer.timers[playerAction].released = this.scene.sys.time.now;
 			thisPlayer.timers[playerAction].duration = thisPlayer.timers[playerAction].released - thisPlayer.timers[playerAction].pressed;
@@ -729,7 +741,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 				this.players[pad.index].interaction_mapped.pressed.push(mappedButton);
 				this.players[pad.index].interaction_mapped.last = mappedButton;
 				this.players[pad.index].interaction_mapped.lastPressed = mappedButton;
-			} 
+			}
 		}
 		// DPad
 		else {
@@ -756,7 +768,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 				this.players[pad.index].interaction_mapped.pressed.push(mappedButton);
 				this.players[pad.index].interaction_mapped.last = mappedButton;
 				this.players[pad.index].interaction_mapped.lastPressed = mappedButton;
-			} 
+			}
 		}
 	}
 
@@ -792,7 +804,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			if (typeof mappedButton !== "undefined") {
 				this.players[pad.index].interaction_mapped.released = mappedButton;
 				this.players[pad.index].interaction_mapped.lastReleased = mappedButton;
-			} 
+			}
 		}
 		// DPad
 		else {
@@ -814,7 +826,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			if (typeof mappedButton !== "undefined") {
 				this.players[pad.index].interaction_mapped.released = mappedButton;
 				this.players[pad.index].interaction_mapped.lastReleased = mappedButton;
-			} 
+			}
 		}
 	}
 
@@ -828,7 +840,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		if (!this.players[gamepad.index].internal.fakedpadBuffer.includes(direction)) {
 			this.players[gamepad.index].internal.fakedpadBuffer.push(direction);
 			this.players[gamepad.index].internal.fakedpadPressed.push(direction);
-			
+
 			let thisButton = new Phaser.Input.Gamepad.Button(gamepad, this.dpadMappings[direction])
 			thisButton.value = 1;
 			thisButton.pressed = true;
@@ -844,7 +856,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 			for (let direction of this.players[gamepad.index].internal.fakedpadBuffer) {
 				this.players[gamepad.index].internal.fakedpadReleased = direction;
-	
+
 				let thisButton = new Phaser.Input.Gamepad.Button(gamepad, this.dpadMappings[direction])
 				thisButton.value = 0;
 				thisButton.pressed = false;
@@ -870,7 +882,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			let direction = '';
 
 			// Directions
-			if (thisGamepad.leftStick.y < -0.5) {
+			if (thisGamepad.leftStick.y < -this.axisThreshold) {
 				this.players[thisGamepad.index].direction.UP = Math.abs(thisGamepad.leftStick.y)
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
 
@@ -879,10 +891,10 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 					direction = 'UP'
 				}
 			}
-			else if (thisGamepad.leftStick.y > 0.5) {
+			else if (thisGamepad.leftStick.y > this.axisThreshold) {
 				this.players[thisGamepad.index].direction.DOWN = thisGamepad.leftStick.y
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
-				
+
 				if (thisGamepad.fakedpad) {
 					this.gamepadFakeDPadPress(thisGamepad, 'DOWN');
 					direction = 'DOWN'
@@ -894,7 +906,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 				this.players[thisGamepad.index].direction.DOWN = thisGamepad.down ? 1 : 0;
 			}
 
-			if (thisGamepad.leftStick.x < -0.5) {
+			if (thisGamepad.leftStick.x < -this.axisThreshold) {
 				this.players[thisGamepad.index].direction.LEFT = Math.abs(thisGamepad.leftStick.x)
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
 
@@ -903,10 +915,10 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 					direction = 'LEFT'
 				}
 			}
-			else if (thisGamepad.leftStick.x > 0.5) {
+			else if (thisGamepad.leftStick.x > this.axisThreshold) {
 				this.players[thisGamepad.index].direction.RIGHT = thisGamepad.leftStick.x
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
-				
+
 				if (thisGamepad.fakedpad) {
 					this.gamepadFakeDPadPress(thisGamepad, 'RIGHT');
 					direction = 'RIGHT'
@@ -923,11 +935,11 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			}
 
 			// Secondary
-			if (thisGamepad.rightStick.y < -0.5) {
+			if (thisGamepad.rightStick.y < -this.axisThreshold) {
 				this.players[thisGamepad.index].direction_secondary.UP = Math.abs(thisGamepad.rightStick.y)
 				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
 			}
-			else if (thisGamepad.rightStick.y > 0.5) {
+			else if (thisGamepad.rightStick.y > this.axisThreshold) {
 				this.players[thisGamepad.index].direction_secondary.DOWN = thisGamepad.rightStick.y
 				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
 			}
@@ -936,11 +948,11 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 				this.players[thisGamepad.index].direction_secondary.DOWN = 0;
 			}
 
-			if (thisGamepad.rightStick.x < -0.5) {
+			if (thisGamepad.rightStick.x < -this.axisThreshold) {
 				this.players[thisGamepad.index].direction_secondary.LEFT = Math.abs(thisGamepad.rightStick.x)
 				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
 			}
-			else if (thisGamepad.rightStick.x > 0.5) {
+			else if (thisGamepad.rightStick.x > this.axisThreshold) {
 				this.players[thisGamepad.index].direction_secondary.RIGHT = thisGamepad.rightStick.x
 				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
 			}
@@ -958,7 +970,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 					let mappedButton = this.getMappedButton(this.players[thisGamepad.index], b);
 					if (typeof mappedButton !== "undefined") {
 						this.players[thisGamepad.index].buttons_mapped[mappedButton] = button.value;
-					} 
+					}
 				}
 
 				// If we're faking the d-pad, we won't have the extra buttons so we'll have to manually update the button objects
@@ -1098,7 +1110,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
      * Create new button combo.
 	 * Combos extend Phaser's keyboard combo and mimic their functionality for gamepad/player combinations.
 	 * If you requrie a keyboard entered combo, use the native Phaser.Input.Keyboard.KeyboardPlugin.createCombo function.
-	 * 
+	 *
 	 * @param {player} player - A player object. If more than one player should be able to execute the combo, you should create multiple buttonCombo instances.
      * @param {(object[])} buttons - An array of buttons that comprise this combo. Use button IDs, mapped buttons or directions, e.g. ['UP', 'UP', 'DOWN', 'DOWN', 'LEFT', 'RIGHT', 'LEFT', 'RIGHT', 'RC_E', 'RC_S']
      * @param {Phaser.Types.Input.Keyboard.KeyComboConfig} [config] - A Key Combo configuration object.
@@ -1216,7 +1228,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			'input': {}
 		};
 		debug.input.gamepads = [];
-		
+
 		for (var i = 0; i < this.gamepads.length; i++) {
 			let pad = this.gamepads[i];
 			let buttons = {};

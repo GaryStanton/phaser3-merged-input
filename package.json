@@ -1,6 +1,6 @@
 {
   "name": "phaser3-merged-input",
-  "version": "1.8.5",
+  "version": "1.8.6",
   "description": "A Phaser 3 plugin to handle input from keyboard, gamepad & mouse, allowing for easy key definition and multiplayer input",
   "main": "src/main.js",
   "scripts": {
@@ -22,7 +22,10 @@
     "phaser3-gamepad",
     "gamepad"
   ],
-  "author": "Gary Stanton",
+  "author": {
+	"name":"Gary Stanton",
+	"url": "https://sleepyada.com"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/garystanton/phaser3-merged-input/issues"

@@ -182,11 +182,16 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
-v1.8.5 - 2024-05-15
-Bugfix: Gamepad button combo events were missing timestamps.
+
+v1.8.6 - 2024-10-06
+Added axis threshold, below which an analogue stick will not generate a value.  
+Previously this was hardcoded at 0.5 to avoid drift, but you may now change this via `setAxisThreshold(0.2)`  
+
+v1.8.5 - 2024-05-15  
+Bugfix: Gamepad button combo events were missing timestamps.  
 Bugfix: Incorrect keyboard event states firing. (Thanks to @brntns)
 
-v1.8.4 - 2023-11-26
+v1.8.4 - 2023-11-26  
 Bugfix: Mouse pointer checkDown function timers were handled incorrrectly.
 
 v1.8.3 - 2023-11-18  
