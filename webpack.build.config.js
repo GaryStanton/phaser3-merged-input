@@ -2,7 +2,7 @@
 
 const webpack = require('webpack');
 const path = require('path');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
     mode: 'production',
@@ -18,38 +18,37 @@ module.exports = {
         filename: '[name].js',
         library: 'MergedInput',
         libraryTarget: 'umd',
-        umdNamedDefine: true,
-        sourceMapFilename: 'MergedInput.min.map'
+        umdNamedDefine: true
     },
 
-    plugins: [
-        new UglifyJSPlugin({
-            include: /\.min\.js$/,
-            parallel: true,
-            sourceMap: true,
-            uglifyOptions: {
-                compress: true,
-                ie8: false,
-                ecma: 5,
-                output: {
-                    comments: false
-                },
-                warnings: true
-            },
-        })
-
-    ],
+    optimization: {
+        minimize: true,
+        minimizer: [
+            new TerserPlugin({
+                parallel: true,
+                terserOptions: {
+                    compress: true,
+                    ecma: 5,
+                    output: {
+                        comments: false
+                    }
+                }
+            })
+        ]
+    },
 
     module: {
         rules: [{
-            test: /\.js$/, // Check for all js files
+            test: /\.js$/,
             exclude: /node_modules/,
-            use: [{
-                loader: 'babel-loader',
-                options: {
-                    presets: ['es2015']
+            use: [
+                {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env'] // Updated preset
+                    }
                 }
-            }]
+            ]
         }]
     },
     optimization: {

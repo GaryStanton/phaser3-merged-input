@@ -84,6 +84,7 @@ export default class controlManager {
                 'TIMESTAMP': 0
             },
             'position': {x:0,y:0},
+            'position_last': {x:0,y:0},
             'gamepad': {},
             'keys': {
                 'UP': [],

@@ -86,7 +86,9 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisPlayer.pointer.BEARING = typeof thisPlayer.pointer.BEARING != 'undefined' ? thisPlayer.pointer.BEARING : '';
 			thisPlayer.pointer.BEARING_DEGREES = typeof thisPlayer.pointer.BEARING_DEGREES != 'undefined' ? thisPlayer.pointer.BEARING_DEGREES : 0;
 			thisPlayer.pointer.ANGLE = typeof thisPlayer.pointer.ANGLE != 'undefined' ? thisPlayer.pointer.ANGLE : '';
-
+			thisPlayer.pointer.POINTERANGLE = typeof thisPlayer.pointer.POINTERANGLE != 'undefined' ? thisPlayer.pointer.POINTERANGLE : ''
+			thisPlayer.pointer.POINTERDIRECTION = typeof thisPlayer.pointer.POINTERDIRECTION != 'undefined' ? thisPlayer.pointer.POINTERDIRECTION : ''
+			thisPlayer.pointer.PLAYERPOS = typeof thisPlayer.pointer.PLAYERPOS != 'undefined' ? thisPlayer.pointer.PLAYERPOS : ''
 
 			thisPlayer.direction.BEARING = this.mapDirectionsToBearing(thisPlayer.direction);
 			thisPlayer.direction.BEARING_LAST = thisPlayer.direction.BEARING != '' ? thisPlayer.direction.BEARING : thisPlayer.direction.BEARING_LAST;
@@ -97,6 +99,17 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisPlayer.direction_secondary.DEGREES = thisPlayer.direction_secondary.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING)) : 0;
 			thisPlayer.direction_secondary.DEGREES_LAST = thisPlayer.direction_secondary.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING_LAST)) : 0;
 		}
+
+
+		// If the first player has moved, we want to update the pointer position	
+		if (typeof this.players[0] !== 'undefined') {
+			if (this.players[0].position.x !== this.players[0].position_last.x || this.players[0].position.y !== this.players[0].position_last.y) {
+				this.pointerMove(this.systems.input.activePointer);
+			}
+		}
+		this.players[0].position_last.x = this.players[0].position.x;
+		this.players[0].position_last.y = this.players[0].position.y;
+
 
 		this.checkKeyboardInput();
 		this.checkGamepadInput();
@@ -1002,14 +1015,15 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 */
 	pointerMove(pointer, threshold) {
 		if (this.players.length) {
-			threshold = threshold || 0;
+			threshold = threshold || -1;
 			if (pointer.distance > threshold) {
 				let pointerDirection = this.getBearingFromAngle(pointer.angle, 8);
 
 				// If we've been given a player position, return bearings and angles
 				if (typeof this.players[0] !== 'undefined' && this.players[0].position.x !== 'undefined') {
+					
 					let position = this.players[0].position;
-					let angleToPointer = Phaser.Math.Angle.Between(position.x, position.y, pointer.worldX, pointer.worldY);
+					let angleToPointer = Phaser.Math.Angle.Between(position.x, position.y, pointer.x, pointer.y);
 					pointerDirection = this.getBearingFromAngle(angleToPointer, 8);
 					let pointerAngle = Number(this.mapBearingToDegrees(pointerDirection));
 
@@ -1017,6 +1031,10 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 					this.players[0].pointer.ANGLE = angleToPointer;
 					this.players[0].pointer.BEARING_DEGREES = pointerAngle;
 					this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
+
+					this.players[0].pointer.POINTERANGLE = pointerAngle;
+					this.players[0].pointer.POINTERDIRECTION = pointerDirection;
+					this.players[0].pointer.PLAYERPOS = position;
 				}
 			}
 		}

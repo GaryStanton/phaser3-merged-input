@@ -1,7 +1,6 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
-var BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 var definePlugin = new webpack.DefinePlugin({
@@ -12,10 +11,18 @@ var definePlugin = new webpack.DefinePlugin({
 
 module.exports = {
     mode: 'development',
+    devServer: {
+        static: path.resolve(__dirname, 'dev'),
+        port: 3000,
+        open: true,
+        hot: true,
+        server: 'https'
+    },
     entry: {
         customPlugin: './src/main.js',
         demo: [
-            'babel-polyfill',
+            'core-js/stable',
+            'regenerator-runtime/runtime',
             path.resolve(__dirname, 'src/demo/main.js')
         ],
         vendor: ['phaser']
@@ -24,7 +31,7 @@ module.exports = {
     output: {
         pathinfo: true,
         path: path.resolve(__dirname, 'dev'),
-        publicPath: './dev/',
+        publicPath: '/', // Serve files from the root
         library: '[name]',
         libraryTarget: 'umd',
         filename: '[name].js'
@@ -33,45 +40,35 @@ module.exports = {
     plugins: [
         definePlugin,
         new HtmlWebpackPlugin({
-            filename: 'index.html',
+            filename: 'index.html', // This will be placed in the output.path directory
             template: './src/demo/index.html',
             chunks: ['vendor', 'customPlugin', 'demo'],
             chunksSortMode: 'manual',
-            minify: {
-                removeAttributeQuotes: false,
-                collapseWhitespace: false,
-                html5: false,
-                minifyCSS: false,
-                minifyJS: false,
-                minifyURLs: false,
-                removeComments: false,
-                removeEmptyAttributes: false
-            },
+            minify: false,
             hash: false
         }),
-        new CopyWebpackPlugin([{
-                from: 'src/demo/assets',
-                to: 'assets'
-        }]),
-        new BrowserSyncPlugin({
-            host: process.env.IP || 'localhost',
-            port: process.env.PORT || 3000,
-            server: {
-                baseDir: ['./', './dev']
-            },
-            https: true
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: 'src/demo/assets',
+                    to: 'assets'
+                }
+            ]
         })
     ],
     module: {
-        rules: [{
-                test: /\.js$/, // Check for all js files
+        rules: [
+            {
+                test: /\.js$/,
                 exclude: /node_modules/,
-                use: [{
-                    loader: 'babel-loader',
-                    options: {
-                        presets: ['es2015']
+                use: [
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            presets: ['@babel/preset-env'] // Updated preset
+                        }
                     }
-                }]
+                ]
             },
             {
                 test: /phaser-split\.js$/,
