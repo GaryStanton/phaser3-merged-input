@@ -32,7 +32,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			'RIGHT': 15
 		}
 
-		this.axisThreshold = this.axisThreshold;
+		this.axisThreshold = 0;
 
 		this.controlManager = new controlManager()
 	}
@@ -101,7 +101,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		}
 
 
-		// If the first player has moved, we want to update the pointer position	
+		// If the first player has moved, we want to update the pointer position
 		if (typeof this.players[0] !== 'undefined') {
 			if (this.players[0].position.x !== this.players[0].position_last.x || this.players[0].position.y !== this.players[0].position_last.y) {
 				this.pointerMove(this.systems.input.activePointer);
@@ -1021,7 +1021,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 
 				// If we've been given a player position, return bearings and angles
 				if (typeof this.players[0] !== 'undefined' && this.players[0].position.x !== 'undefined') {
-					
+
 					let position = this.players[0].position;
 					let angleToPointer = Phaser.Math.Angle.Between(position.x, position.y, pointer.x, pointer.y);
 					pointerDirection = this.getBearingFromAngle(angleToPointer, 8);
