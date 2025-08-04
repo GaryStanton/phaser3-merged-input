@@ -124,6 +124,11 @@ export default class Demo extends Phaser.Scene {
 		this.player1.sprites.arrow.fillStyle(0xff0000, 1);
 		this.player1.sprites.arrow.fillTriangle(-10, -10, 10, -10, 0, 20);
 
+		// Add a line graphic inside the arrow to show the snapped direction
+		this.player1.sprites.line = this.add.graphics({x: this.player1.position.x, y: this.player1.position.y});
+		this.player1.sprites.line.lineStyle(2, 0xffffff, 1);
+		this.player1.sprites.line.lineBetween(0, 0, 0, 20);
+
 
 		this.player2.setPosition(950, 150);
 
@@ -131,10 +136,16 @@ export default class Demo extends Phaser.Scene {
 		this.player2.sprites.player = this.add.graphics({x: this.player2.position.x, y: this.player2.position.y});
 		this.player2.sprites.player.fillStyle(0x0000ff, 1);
 		this.player2.sprites.player.fillCircle(0, 0, 20);
+
 		// Add an arrow to represent the direction
 		this.player2.sprites.arrow = this.add.graphics({x: this.player2.position.x, y: this.player2.position.y});
 		this.player2.sprites.arrow.fillStyle(0xff0000, 1);
 		this.player2.sprites.arrow.fillTriangle(-10, -10, 10, -10, 0, 20);
+
+		// Add a line graphic inside the arrow to show the snapped direction
+		this.player2.sprites.line = this.add.graphics({x: this.player2.position.x, y: this.player2.position.y});
+		this.player2.sprites.line.lineStyle(2, 0xffffff, 1);
+		this.player2.sprites.line.lineBetween(0, 0, 0, 20);
 
 		// Text for bearing
 		this.player2.sprites.bearingText = this.add.text(this.player2.position.x, this.player2.position.y - 30, '', {
@@ -237,14 +248,16 @@ export default class Demo extends Phaser.Scene {
 
 		// Check to see if the mouse is moving, in which case we'll use that for direction changes
 		if (this.player1.pointer.TIMESTAMP > this.player1.direction.TIMESTAMP) {
-			// Update the bearing text
+			// Update the visual pointer
 			this.player1.sprites.bearingText.setText(this.player1.pointer.BEARING || 'E');
-			this.player1.sprites.arrow.rotation = Phaser.Math.DegToRad(this.player1.pointer.BEARING_DEGREES - 90);
+			this.player1.sprites.arrow.rotation = Phaser.Math.DegToRad(this.player1.pointer.DEGREES - 90);
+			this.player1.sprites.line.rotation = Phaser.Math.DegToRad(this.player1.pointer.BEARING_DEGREES - 90);
 		}
 		else {
-			// Update the bearing text
+			// Update the visual pointer
 			this.player1.sprites.bearingText.setText(this.player1.direction.BEARING_LAST || 'E');
 			this.player1.sprites.arrow.rotation = Phaser.Math.DegToRad(this.player1.direction.DEGREES_LAST - 90);
+			this.player1.sprites.line.rotation = Phaser.Math.DegToRad(this.player1.direction.BEARING_DEGREES_LAST - 90);
 		}
 
         this.player2Text.setText([
@@ -261,6 +274,7 @@ export default class Demo extends Phaser.Scene {
 		// Update the bearing text
 		this.player2.sprites.bearingText.setText(this.player2.direction.BEARING_LAST || 'E');
 		this.player2.sprites.arrow.rotation = Phaser.Math.DegToRad(this.player2.direction.DEGREES_LAST - 90);
+		this.player2.sprites.line.rotation = Phaser.Math.DegToRad(this.player2.direction.BEARING_DEGREES_LAST - 90);
 
 
 

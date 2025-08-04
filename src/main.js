@@ -84,6 +84,19 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	}
 
 	preupdate() {
+		// If the first player has moved, we want to update the pointer position
+		if (typeof this.players[0] !== 'undefined') {
+			if (this.players[0].position.x !== this.players[0].position_last.x || this.players[0].position.y !== this.players[0].position_last.y) {
+				this.pointerMove(this.systems.input.activePointer);
+			}
+		}
+		this.players[0].position_last.x = this.players[0].position.x;
+		this.players[0].position_last.y = this.players[0].position.y;
+
+		this.checkKeyboardInput();
+		this.checkGamepadInput();
+		this.checkPointerInput();
+
 		// Loop through players and handle input
 		for (let thisPlayer of this.players) {
 			// If the pointer hasn't moved, and the scene has changed, this can end up as undefined
@@ -95,30 +108,26 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisPlayer.pointer.POINTERDIRECTION = typeof thisPlayer.pointer.POINTERDIRECTION != 'undefined' ? thisPlayer.pointer.POINTERDIRECTION : ''
 			thisPlayer.pointer.PLAYERPOS = typeof thisPlayer.pointer.PLAYERPOS != 'undefined' ? thisPlayer.pointer.PLAYERPOS : ''
 
-			thisPlayer.direction.BEARING = this.mapDirectionsToBearing(thisPlayer.direction);
+			thisPlayer.direction.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction);
+			thisPlayer.direction.ANGLE_LAST = thisPlayer.direction.ANGLE != '' ? thisPlayer.direction.ANGLE : thisPlayer.direction.ANGLE_LAST;
+			thisPlayer.direction.DEGREES = thisPlayer.direction.ANGLE !== -1 ? Math.round(Phaser.Math.RadToDeg(thisPlayer.direction.ANGLE) * 100) / 100 : -1;
+			thisPlayer.direction.DEGREES_LAST = thisPlayer.direction.DEGREES != -1 ? thisPlayer.direction.DEGREES : thisPlayer.direction.DEGREES_LAST;
+
+			thisPlayer.direction.BEARING = thisPlayer.direction.ANGLE !== -1 ? this.getBearingFromAngle(thisPlayer.direction.ANGLE) : '';
 			thisPlayer.direction.BEARING_LAST = thisPlayer.direction.BEARING != '' ? thisPlayer.direction.BEARING : thisPlayer.direction.BEARING_LAST;
-			thisPlayer.direction.DEGREES = thisPlayer.direction.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING)) : 0;
-			thisPlayer.direction.DEGREES_LAST = thisPlayer.direction.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING_LAST)) : 0;
-			thisPlayer.direction_secondary.BEARING = this.mapDirectionsToBearing(thisPlayer.direction_secondary);
+			thisPlayer.direction.BEARING_DEGREES = thisPlayer.direction.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING)) : 0;
+			thisPlayer.direction.BEARING_DEGREES_LAST = thisPlayer.direction.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING_LAST)) : 0;
+
+			thisPlayer.direction_secondary.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction_secondary);
+			thisPlayer.direction_secondary.ANGLE_LAST = thisPlayer.direction_secondary.ANGLE != '' ? thisPlayer.direction_secondary.ANGLE : thisPlayer.direction_secondary.ANGLE_LAST;
+			thisPlayer.direction_secondary.DEGREES = thisPlayer.direction_secondary.ANGLE !== -1 ? Math.round(Phaser.Math.RadToDeg(thisPlayer.direction_secondary.ANGLE) * 100) / 100 : -1;
+			thisPlayer.direction_secondary.DEGREES_LAST = thisPlayer.direction_secondary.DEGREES != -1 ? thisPlayer.direction_secondary.DEGREES : thisPlayer.direction_secondary.DEGREES_LAST;
+
+			thisPlayer.direction_secondary.BEARING = thisPlayer.direction_secondary.ANGLE !== -1 ? this.getBearingFromAngle(thisPlayer.direction_secondary.ANGLE) : '';
 			thisPlayer.direction_secondary.BEARING_LAST = thisPlayer.direction_secondary.BEARING != '' ? thisPlayer.direction_secondary.BEARING : thisPlayer.direction_secondary.BEARING_LAST;
-			thisPlayer.direction_secondary.DEGREES = thisPlayer.direction_secondary.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING)) : 0;
-			thisPlayer.direction_secondary.DEGREES_LAST = thisPlayer.direction_secondary.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING_LAST)) : 0;
+			thisPlayer.direction_secondary.BEARING_DEGREES = thisPlayer.direction_secondary.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING)) : 0;
+			thisPlayer.direction_secondary.BEARING_DEGREES_LAST = thisPlayer.direction_secondary.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING_LAST)) : 0;
 		}
-
-
-		// If the first player has moved, we want to update the pointer position
-		if (typeof this.players[0] !== 'undefined') {
-			if (this.players[0].position.x !== this.players[0].position_last.x || this.players[0].position.y !== this.players[0].position_last.y) {
-				this.pointerMove(this.systems.input.activePointer);
-			}
-		}
-		this.players[0].position_last.x = this.players[0].position.x;
-		this.players[0].position_last.y = this.players[0].position.y;
-
-
-		this.checkKeyboardInput();
-		this.checkGamepadInput();
-		this.checkPointerInput();
 	}
 
 	postupdate() {
@@ -1206,10 +1215,49 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		return thisDirection;
 	}
 
+	/**
+	 * Given a directions object corresponding to analogue input, return an angle
+	 * @param {*} directions - Direction object containing UP, DOWN, LEFT, RIGHT values
+	 * @param {number} threshold - Threshold for analog input, e.g. 0.1
+	 * @returns {number} Calulated angle
+	 */
+	mapDirectionsToAngle(directions, threshold) {
+		threshold = threshold || this.axisThreshold;
+
+		// Get the analog values for each direction
+		let up = directions.UP || 0;
+		let down = directions.DOWN || 0;
+		let left = directions.LEFT || 0;
+		let right = directions.RIGHT || 0;
+
+		// Apply threshold
+		up = Math.abs(up) > threshold ? up : 0;
+		down = Math.abs(down) > threshold ? down : 0;
+		left = Math.abs(left) > threshold ? left : 0;
+		right = Math.abs(right) > threshold ? right : 0;
+
+		// Calculate net direction values
+		let x = right - left;  // Positive = right, negative = left
+		let y = down - up;     // Positive = down, negative = up
+
+		// If no input, return null
+		if (x === 0 && y === 0) {
+			return -1
+		}
+
+		// Calculate angle using atan2 (returns angle in radians from -π to π)
+		let angle = Math.atan2(y, x);
+
+		return angle;
+	}
+
 
 	/**
-	 * Given a directions object, return the applicable bearing (8 way only)
+	 * Given a directions object, return the applicable bearing
 	 * @param {*} directions
+	 * @param {number} threshold - Threshold for analog input, e.g. 0.1
+	 * @param {number} numDirections - Number of directions to snap to, 4/8/16/32.
+	 * @returns {string} Bearing, e.g. 'N', 'NE', 'E', etc.
 	 */
 	mapDirectionsToBearing(directions, threshold, numDirections) {
 		threshold = threshold || 0;
@@ -1239,7 +1287,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 		// Calculate angle using atan2 (returns angle in radians from -π to π)
 		let angle = Math.atan2(y, x);
 
-		// Convert to bearing using your existing function
+		// Convert to bearing
 		return this.getBearingFromAngle(angle, numDirections);
 	}
 
