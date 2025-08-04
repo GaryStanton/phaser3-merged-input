@@ -18,7 +18,7 @@ export default class InputController extends Phaser.Scene {
         this.load.scenePlugin('mergedInput', MergedInput);
 
         /**
-         * Here we'll launch a separate scene for debugging. 
+         * Here we'll launch a separate scene for debugging.
          **/
         this.scene.launch('Debug')
         this.debugScene = this.scene.get('Debug');
@@ -31,7 +31,7 @@ export default class InputController extends Phaser.Scene {
        // Setup player objects
         this.player1 = this.mergedInput.addPlayer(0);
         this.player2 = this.mergedInput.addPlayer(1);
-        
+
         /**
          * Define keys (player, action, key, append)
          * This scene would also be a good place to handle updates of key definitions, so that a player can redefine keys or gamepad mappings.
@@ -72,12 +72,15 @@ export default class InputController extends Phaser.Scene {
             .defineKey(1, 'B7', 'NUMPAD_EIGHT')
             .defineKey(1, 'B8', 'NUMPAD_NINE')
             .defineKey(1, 'B9', 'NUMPAD_ZERO')
+
+			.setAxisThreshold(0.2)
+			.setNumDirections(16) // Set the number of directions to snap to when mapping input to bearings
             ;
     }
 
     /**
      * We could handle input events in this scene's update method, or reference the instance of MergedInput from other scenes.
-     **/ 
+     **/
 	update(){
 	}
 }

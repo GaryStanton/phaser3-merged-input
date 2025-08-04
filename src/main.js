@@ -32,7 +32,11 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			'RIGHT': 15
 		}
 
+		// A threshold (between 0 and 1) below which analog stick input will be ignored
 		this.axisThreshold = 0;
+
+		// The number of directions to snap to when mapping input to bearings (Defaults to 32)
+		this.numDirections = Object.keys(this.bearings).length - 1;
 
 		this.controlManager = new controlManager()
 	}
@@ -86,6 +90,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisPlayer.pointer.BEARING = typeof thisPlayer.pointer.BEARING != 'undefined' ? thisPlayer.pointer.BEARING : '';
 			thisPlayer.pointer.BEARING_DEGREES = typeof thisPlayer.pointer.BEARING_DEGREES != 'undefined' ? thisPlayer.pointer.BEARING_DEGREES : 0;
 			thisPlayer.pointer.ANGLE = typeof thisPlayer.pointer.ANGLE != 'undefined' ? thisPlayer.pointer.ANGLE : '';
+			thisPlayer.pointer.DEGREES = typeof thisPlayer.pointer.DEGREES != 'undefined' ? thisPlayer.pointer.DEGREES : 0;
 			thisPlayer.pointer.POINTERANGLE = typeof thisPlayer.pointer.POINTERANGLE != 'undefined' ? thisPlayer.pointer.POINTERANGLE : ''
 			thisPlayer.pointer.POINTERDIRECTION = typeof thisPlayer.pointer.POINTERDIRECTION != 'undefined' ? thisPlayer.pointer.POINTERDIRECTION : ''
 			thisPlayer.pointer.PLAYERPOS = typeof thisPlayer.pointer.PLAYERPOS != 'undefined' ? thisPlayer.pointer.PLAYERPOS : ''
@@ -188,6 +193,16 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 */
 	setAxisThreshold(value) {
 		this.axisThreshold = value;
+		return this;
+	}
+
+	/**
+	 * Set the number of directions to snap to when mapping input to bearings
+	 */
+	setNumDirections(value) {
+		if (typeof value === 'number' && value > 0) {
+			this.numDirections = value;
+		}
 		return this;
 	}
 
@@ -581,7 +596,9 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 				// Dpad
 				if (['UP', 'DOWN', 'LEFT', 'RIGHT'].includes(thisKey)) {
 					thisPlayer.direction[thisKey] = action;
-					thisPlayer.direction.TIMESTAMP = this.scene.sys.time.now;
+					if (action == 1) {
+						thisPlayer.direction.TIMESTAMP = this.scene.sys.time.now;
+					}
 				}
 				// Alternative direction
 				else if (['ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT'].includes(thisKey)) {
@@ -1013,22 +1030,26 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * Function to run on pointer move.
 	 * @param {*} pointer - The pointer object
 	 */
-	pointerMove(pointer, threshold) {
+	pointerMove(pointer, threshold, numDirections) {
 		if (this.players.length) {
 			threshold = threshold || -1;
+			numDirections = numDirections || this.numDirections;
+
 			if (pointer.distance > threshold) {
-				let pointerDirection = this.getBearingFromAngle(pointer.angle, 8);
+				let pointerDirection = this.getBearingFromAngle(pointer.angle, numDirections);
 
 				// If we've been given a player position, return bearings and angles
 				if (typeof this.players[0] !== 'undefined' && this.players[0].position.x !== 'undefined') {
 
 					let position = this.players[0].position;
-					let angleToPointer = Phaser.Math.Angle.Between(position.x, position.y, pointer.x, pointer.y);
-					pointerDirection = this.getBearingFromAngle(angleToPointer, 8);
+					let angleToPointer = Math.round(Phaser.Math.Angle.Between(position.x, position.y, pointer.x, pointer.y) * 100) / 100;
+					let angleDegrees = Math.round(Phaser.Math.RadToDeg(angleToPointer) * 100) / 100;
+					pointerDirection = this.getBearingFromAngle(angleToPointer, numDirections);
 					let pointerAngle = Number(this.mapBearingToDegrees(pointerDirection));
 
 					this.players[0].pointer.BEARING = pointerDirection;
 					this.players[0].pointer.ANGLE = angleToPointer;
+					this.players[0].pointer.DEGREES = angleDegrees;
 					this.players[0].pointer.BEARING_DEGREES = pointerAngle;
 					this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
 
@@ -1144,12 +1165,12 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * @param {number} numDirections - Number of possible directions (e.g. 4 for N/S/E/W)
 	 */
 	getBearingFromAngle(angle, numDirections) {
-		numDirections = numDirections || 8;
+		numDirections = numDirections || this.numDirections;
 
 		var snap_interval = Phaser.Math.PI2 / numDirections;
 
 		var angleSnap = Phaser.Math.Snap.To(angle, snap_interval);
-		var angleSnapDeg = Phaser.Math.RadToDeg(angleSnap);
+		var angleSnapDeg = Number(Phaser.Math.RadToDeg(angleSnap).toFixed(2));
 		var angleSnapDir = this.bearings[angleSnapDeg];
 
 		return angleSnapDir;
@@ -1190,33 +1211,36 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * Given a directions object, return the applicable bearing (8 way only)
 	 * @param {*} directions
 	 */
-	mapDirectionsToBearing(directions, threshold) {
-		var threshold = threshold || -.5
-		if (directions.UP && !(directions.LEFT || directions.RIGHT)) {
-			return 'N';
+	mapDirectionsToBearing(directions, threshold, numDirections) {
+		threshold = threshold || 0;
+		numDirections = numDirections || this.numDirections;
+
+		// Get the analog values for each direction
+		let up = directions.UP || 0;
+		let down = directions.DOWN || 0;
+		let left = directions.LEFT || 0;
+		let right = directions.RIGHT || 0;
+
+		// Apply threshold
+		up = Math.abs(up) > threshold ? up : 0;
+		down = Math.abs(down) > threshold ? down : 0;
+		left = Math.abs(left) > threshold ? left : 0;
+		right = Math.abs(right) > threshold ? right : 0;
+
+		// Calculate net direction values
+		let x = right - left;  // Positive = right, negative = left
+		let y = down - up;     // Positive = down, negative = up
+
+		// If no input, return empty bearing
+		if (x === 0 && y === 0) {
+			return '';
 		}
-		if (directions.RIGHT && directions.UP) {
-			return 'NE';
-		}
-		if (directions.RIGHT && !(directions.UP || directions.DOWN)) {
-			return 'E';
-		}
-		if (directions.RIGHT && directions.DOWN) {
-			return 'SE';
-		}
-		if (directions.DOWN && !(directions.LEFT || directions.RIGHT)) {
-			return 'S';
-		}
-		if (directions.LEFT && directions.DOWN) {
-			return 'SW';
-		}
-		if (directions.LEFT && !(directions.UP || directions.DOWN)) {
-			return 'W';
-		}
-		if (directions.LEFT && directions.UP) {
-			return 'NW';
-		}
-		return '';
+
+		// Calculate angle using atan2 (returns angle in radians from -π to π)
+		let angle = Math.atan2(y, x);
+
+		// Convert to bearing using your existing function
+		return this.getBearingFromAngle(angle, numDirections);
 	}
 
 	/**

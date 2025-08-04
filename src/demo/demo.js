@@ -8,8 +8,10 @@ export default class Demo extends Phaser.Scene {
     }
 
     create() {
+
         // Get the input controller scene, which contains our player objects
         this.inputController = this.scene.get('InputController');
+
 
         // Get our player objects
         this.player1 = this.inputController.player1;
@@ -98,11 +100,54 @@ export default class Demo extends Phaser.Scene {
             color: '#00ff00'
         });
 
-        // Set a position for the player
-        this.player1.setPosition(this.cameras.main.centerX, this.cameras.main.centerY);
+
+		// Set positions for the players
+        this.player1.setPosition(250, 150);
+		console.log(this.player1);
+
+		// Draw a graphic to represent the players
+		this.player1.sprites.player = this.add.graphics({x: this.player1.position.x, y: this.player1.position.y});
+		this.player1.sprites.player.fillStyle(0x00ff00, 1);
+		this.player1.sprites.player.fillCircle(0, 0, 20);
+		// Text for bearing
+		this.player1.sprites.bearingText = this.add.text(this.player1.position.x, this.player1.position.y - 30, '', {
+			fontFamily: 'Arial',
+			fontSize: 14,
+			color: '#00ff00'
+		});
+		this.player1.sprites.bearingText.setOrigin(0.5, 0.5);
+		// Set the bearing text
+		this.player1.sprites.bearingText.setText('N');
+
+		// Add an arrow to represent the direction
+		this.player1.sprites.arrow = this.add.graphics({x: this.player1.position.x, y: this.player1.position.y});
+		this.player1.sprites.arrow.fillStyle(0xff0000, 1);
+		this.player1.sprites.arrow.fillTriangle(-10, -10, 10, -10, 0, 20);
 
 
-        
+		this.player2.setPosition(950, 150);
+
+		// Draw a graphic to represent the players
+		this.player2.sprites.player = this.add.graphics({x: this.player2.position.x, y: this.player2.position.y});
+		this.player2.sprites.player.fillStyle(0x0000ff, 1);
+		this.player2.sprites.player.fillCircle(0, 0, 20);
+		// Add an arrow to represent the direction
+		this.player2.sprites.arrow = this.add.graphics({x: this.player2.position.x, y: this.player2.position.y});
+		this.player2.sprites.arrow.fillStyle(0xff0000, 1);
+		this.player2.sprites.arrow.fillTriangle(-10, -10, 10, -10, 0, 20);
+
+		// Text for bearing
+		this.player2.sprites.bearingText = this.add.text(this.player2.position.x, this.player2.position.y - 30, '', {
+			fontFamily: 'Arial',
+			fontSize: 14,
+			color: '#00ff00'
+		});
+		this.player2.sprites.bearingText.setOrigin(0.5, 0.5);
+		// Set the bearing text
+		this.player2.sprites.bearingText.setText('N');
+
+
+
         /**
          * Some examples of creating button combos
          */
@@ -121,6 +166,17 @@ export default class Demo extends Phaser.Scene {
         });
 
     }
+
+
+
+	/**
+	 * Check player movement
+	 */
+	checkMovement() {
+
+		return this;
+	}
+
 
     update() {
         // Loop through player objects
@@ -142,7 +198,7 @@ export default class Demo extends Phaser.Scene {
                 thisPlayer.sprites.dpad.setFrame('XboxOne_Dpad_Left');
             }
 
-            
+
             // Check the button NUMBER values to correspond with the button graphics
             for (let thisButton in thisPlayer.buttons) {
                 if (typeof thisPlayer.buttonGraphics[thisButton] !== 'undefined') {
@@ -167,7 +223,7 @@ export default class Demo extends Phaser.Scene {
                 }
             }
         }
-        
+
         this.player1Text.setText([
             'Player 1', 'Gamepad: ' + (typeof this.player1.gamepad.index === 'undefined' ? 'Press a button to connect' : this.player1.gamepad.id),
             'Directions: ' + JSON.stringify(this.player1.direction),
@@ -178,6 +234,19 @@ export default class Demo extends Phaser.Scene {
             `isDown: ${this.player1.isDown(Object.keys(this.player1.buttons_mapped))}, ${this.player1.isDown(Object.keys(this.player1.buttons))}`,
             'Internal: ' + JSON.stringify(this.player1.internal)
         ]);
+
+		// Check to see if the mouse is moving, in which case we'll use that for direction changes
+		if (this.player1.pointer.TIMESTAMP > this.player1.direction.TIMESTAMP) {
+			// Update the bearing text
+			this.player1.sprites.bearingText.setText(this.player1.pointer.BEARING || 'E');
+			this.player1.sprites.arrow.rotation = Phaser.Math.DegToRad(this.player1.pointer.BEARING_DEGREES - 90);
+		}
+		else {
+			// Update the bearing text
+			this.player1.sprites.bearingText.setText(this.player1.direction.BEARING_LAST || 'E');
+			this.player1.sprites.arrow.rotation = Phaser.Math.DegToRad(this.player1.direction.DEGREES_LAST - 90);
+		}
+
         this.player2Text.setText([
             'Player 2', 'Gamepad: ' + (typeof this.player2.gamepad.index === 'undefined' ? 'Press a button to connect' : this.player2.gamepad.id),
             'Directions: ' + JSON.stringify(this.player2.direction),
@@ -188,9 +257,14 @@ export default class Demo extends Phaser.Scene {
             `isDown: ${this.player2.isDown(Object.keys(this.player2.buttons_mapped))}, ${this.player2.isDown(Object.keys(this.player2.buttons))}`,
             'Internal: ' + JSON.stringify(this.player2.internal)
         ]);
-        
-        
-        /** 
+
+		// Update the bearing text
+		this.player2.sprites.bearingText.setText(this.player2.direction.BEARING_LAST || 'E');
+		this.player2.sprites.arrow.rotation = Phaser.Math.DegToRad(this.player2.direction.DEGREES_LAST - 90);
+
+
+
+        /**
          * Some logging of player helper functions
          */
         /*
@@ -255,7 +329,7 @@ export default class Demo extends Phaser.Scene {
         */
 
 
- 
+
 
 
         // this.debugView.value = this.inputController.mergedInput.debug().input;
