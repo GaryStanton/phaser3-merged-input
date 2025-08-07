@@ -741,7 +741,12 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
       'LEFT': 14,
       'RIGHT': 15
     };
-    _this.axisThreshold = _this.axisThreshold;
+
+    // A threshold (between 0 and 1) below which analog stick input will be ignored
+    _this.axisThreshold = 0;
+
+    // The number of directions to snap to when mapping input to bearings (Defaults to 32)
+    _this.numDirections = Object.keys(_this.bearings).length - 1;
     _this.controlManager = new controlManager();
     return _this;
   }
@@ -799,35 +804,7 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
   }, {
     key: "preupdate",
     value: function preupdate() {
-      // Loop through players and handle input
-      var _iterator2 = _createForOfIteratorHelper(this.players),
-        _step2;
-      try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var thisPlayer = _step2.value;
-          // If the pointer hasn't moved, and the scene has changed, this can end up as undefined
-          thisPlayer.pointer.BEARING = typeof thisPlayer.pointer.BEARING != 'undefined' ? thisPlayer.pointer.BEARING : '';
-          thisPlayer.pointer.BEARING_DEGREES = typeof thisPlayer.pointer.BEARING_DEGREES != 'undefined' ? thisPlayer.pointer.BEARING_DEGREES : 0;
-          thisPlayer.pointer.ANGLE = typeof thisPlayer.pointer.ANGLE != 'undefined' ? thisPlayer.pointer.ANGLE : '';
-          thisPlayer.pointer.POINTERANGLE = typeof thisPlayer.pointer.POINTERANGLE != 'undefined' ? thisPlayer.pointer.POINTERANGLE : '';
-          thisPlayer.pointer.POINTERDIRECTION = typeof thisPlayer.pointer.POINTERDIRECTION != 'undefined' ? thisPlayer.pointer.POINTERDIRECTION : '';
-          thisPlayer.pointer.PLAYERPOS = typeof thisPlayer.pointer.PLAYERPOS != 'undefined' ? thisPlayer.pointer.PLAYERPOS : '';
-          thisPlayer.direction.BEARING = this.mapDirectionsToBearing(thisPlayer.direction);
-          thisPlayer.direction.BEARING_LAST = thisPlayer.direction.BEARING != '' ? thisPlayer.direction.BEARING : thisPlayer.direction.BEARING_LAST;
-          thisPlayer.direction.DEGREES = thisPlayer.direction.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING)) : 0;
-          thisPlayer.direction.DEGREES_LAST = thisPlayer.direction.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING_LAST)) : 0;
-          thisPlayer.direction_secondary.BEARING = this.mapDirectionsToBearing(thisPlayer.direction_secondary);
-          thisPlayer.direction_secondary.BEARING_LAST = thisPlayer.direction_secondary.BEARING != '' ? thisPlayer.direction_secondary.BEARING : thisPlayer.direction_secondary.BEARING_LAST;
-          thisPlayer.direction_secondary.DEGREES = thisPlayer.direction_secondary.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING)) : 0;
-          thisPlayer.direction_secondary.DEGREES_LAST = thisPlayer.direction_secondary.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING_LAST)) : 0;
-        }
-
-        // If the first player has moved, we want to update the pointer position	
-      } catch (err) {
-        _iterator2.e(err);
-      } finally {
-        _iterator2.f();
-      }
+      // If the first player has moved, we want to update the pointer position
       if (typeof this.players[0] !== 'undefined') {
         if (this.players[0].position.x !== this.players[0].position_last.x || this.players[0].position.y !== this.players[0].position_last.y) {
           this.pointerMove(this.systems.input.activePointer);
@@ -838,6 +815,43 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
       this.checkKeyboardInput();
       this.checkGamepadInput();
       this.checkPointerInput();
+
+      // Loop through players and handle input
+      var _iterator2 = _createForOfIteratorHelper(this.players),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var thisPlayer = _step2.value;
+          // If the pointer hasn't moved, and the scene has changed, this can end up as undefined
+          thisPlayer.pointer.BEARING = typeof thisPlayer.pointer.BEARING != 'undefined' ? thisPlayer.pointer.BEARING : '';
+          thisPlayer.pointer.BEARING_DEGREES = typeof thisPlayer.pointer.BEARING_DEGREES != 'undefined' ? thisPlayer.pointer.BEARING_DEGREES : 0;
+          thisPlayer.pointer.ANGLE = typeof thisPlayer.pointer.ANGLE != 'undefined' ? thisPlayer.pointer.ANGLE : '';
+          thisPlayer.pointer.DEGREES = typeof thisPlayer.pointer.DEGREES != 'undefined' ? thisPlayer.pointer.DEGREES : 0;
+          thisPlayer.pointer.POINTERANGLE = typeof thisPlayer.pointer.POINTERANGLE != 'undefined' ? thisPlayer.pointer.POINTERANGLE : '';
+          thisPlayer.pointer.POINTERDIRECTION = typeof thisPlayer.pointer.POINTERDIRECTION != 'undefined' ? thisPlayer.pointer.POINTERDIRECTION : '';
+          thisPlayer.pointer.PLAYERPOS = typeof thisPlayer.pointer.PLAYERPOS != 'undefined' ? thisPlayer.pointer.PLAYERPOS : '';
+          thisPlayer.direction.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction);
+          thisPlayer.direction.ANGLE_LAST = thisPlayer.direction.ANGLE != '' ? thisPlayer.direction.ANGLE : thisPlayer.direction.ANGLE_LAST;
+          thisPlayer.direction.DEGREES = thisPlayer.direction.ANGLE !== -1 ? Math.round(Phaser.Math.RadToDeg(thisPlayer.direction.ANGLE) * 100) / 100 : -1;
+          thisPlayer.direction.DEGREES_LAST = thisPlayer.direction.DEGREES != -1 ? thisPlayer.direction.DEGREES : thisPlayer.direction.DEGREES_LAST;
+          thisPlayer.direction.BEARING = thisPlayer.direction.ANGLE !== -1 ? this.getBearingFromAngle(thisPlayer.direction.ANGLE) : '';
+          thisPlayer.direction.BEARING_LAST = thisPlayer.direction.BEARING != '' ? thisPlayer.direction.BEARING : thisPlayer.direction.BEARING_LAST;
+          thisPlayer.direction.BEARING_DEGREES = thisPlayer.direction.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING)) : 0;
+          thisPlayer.direction.BEARING_DEGREES_LAST = thisPlayer.direction.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING_LAST)) : 0;
+          thisPlayer.direction_secondary.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction_secondary);
+          thisPlayer.direction_secondary.ANGLE_LAST = thisPlayer.direction_secondary.ANGLE != '' ? thisPlayer.direction_secondary.ANGLE : thisPlayer.direction_secondary.ANGLE_LAST;
+          thisPlayer.direction_secondary.DEGREES = thisPlayer.direction_secondary.ANGLE !== -1 ? Math.round(Phaser.Math.RadToDeg(thisPlayer.direction_secondary.ANGLE) * 100) / 100 : -1;
+          thisPlayer.direction_secondary.DEGREES_LAST = thisPlayer.direction_secondary.DEGREES != -1 ? thisPlayer.direction_secondary.DEGREES : thisPlayer.direction_secondary.DEGREES_LAST;
+          thisPlayer.direction_secondary.BEARING = thisPlayer.direction_secondary.ANGLE !== -1 ? this.getBearingFromAngle(thisPlayer.direction_secondary.ANGLE) : '';
+          thisPlayer.direction_secondary.BEARING_LAST = thisPlayer.direction_secondary.BEARING != '' ? thisPlayer.direction_secondary.BEARING : thisPlayer.direction_secondary.BEARING_LAST;
+          thisPlayer.direction_secondary.BEARING_DEGREES = thisPlayer.direction_secondary.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING)) : 0;
+          thisPlayer.direction_secondary.BEARING_DEGREES_LAST = thisPlayer.direction_secondary.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction_secondary.BEARING_LAST)) : 0;
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
     }
   }, {
     key: "postupdate",
@@ -932,6 +946,18 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
     key: "setAxisThreshold",
     value: function setAxisThreshold(value) {
       this.axisThreshold = value;
+      return this;
+    }
+
+    /**
+     * Set the number of directions to snap to when mapping input to bearings
+     */
+  }, {
+    key: "setNumDirections",
+    value: function setNumDirections(value) {
+      if (typeof value === 'number' && value > 0) {
+        this.numDirections = value;
+      }
       return this;
     }
   }, {
@@ -1432,7 +1458,9 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
             }
             if (['UP', 'DOWN', 'LEFT', 'RIGHT'].includes(thisKey)) {
               thisPlayer.direction[thisKey] = action;
-              thisPlayer.direction.TIMESTAMP = this.scene.sys.time.now;
+              if (action == 1) {
+                thisPlayer.direction.TIMESTAMP = this.scene.sys.time.now;
+              }
             }
             // Alternative direction
             else if (['ALT_UP', 'ALT_DOWN', 'ALT_LEFT', 'ALT_RIGHT'].includes(thisKey)) {
@@ -1952,20 +1980,23 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
      */
   }, {
     key: "pointerMove",
-    value: function pointerMove(pointer, threshold) {
+    value: function pointerMove(pointer, threshold, numDirections) {
       if (this.players.length) {
         threshold = threshold || -1;
+        numDirections = numDirections || this.numDirections;
         if (pointer.distance > threshold) {
-          var pointerDirection = this.getBearingFromAngle(pointer.angle, 8);
+          var pointerDirection = this.getBearingFromAngle(pointer.angle, numDirections);
 
           // If we've been given a player position, return bearings and angles
           if (typeof this.players[0] !== 'undefined' && this.players[0].position.x !== 'undefined') {
             var position = this.players[0].position;
-            var angleToPointer = Phaser.Math.Angle.Between(position.x, position.y, pointer.x, pointer.y);
-            pointerDirection = this.getBearingFromAngle(angleToPointer, 8);
+            var angleToPointer = Math.round(Phaser.Math.Angle.Between(position.x, position.y, pointer.x, pointer.y) * 100) / 100;
+            var angleDegrees = Math.round(Phaser.Math.RadToDeg(angleToPointer) * 100) / 100;
+            pointerDirection = this.getBearingFromAngle(angleToPointer, numDirections);
             var pointerAngle = Number(this.mapBearingToDegrees(pointerDirection));
             this.players[0].pointer.BEARING = pointerDirection;
             this.players[0].pointer.ANGLE = angleToPointer;
+            this.players[0].pointer.DEGREES = angleDegrees;
             this.players[0].pointer.BEARING_DEGREES = pointerAngle;
             this.players[0].pointer.TIMESTAMP = this.scene.sys.time.now;
             this.players[0].pointer.POINTERANGLE = pointerAngle;
@@ -2092,10 +2123,10 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
   }, {
     key: "getBearingFromAngle",
     value: function getBearingFromAngle(angle, numDirections) {
-      numDirections = numDirections || 8;
+      numDirections = numDirections || this.numDirections;
       var snap_interval = Phaser.Math.PI2 / numDirections;
       var angleSnap = Phaser.Math.Snap.To(angle, snap_interval);
-      var angleSnapDeg = Phaser.Math.RadToDeg(angleSnap);
+      var angleSnapDeg = Number(Phaser.Math.RadToDeg(angleSnap).toFixed(2));
       var angleSnapDir = this.bearings[angleSnapDeg];
       return angleSnapDir;
     }
@@ -2130,38 +2161,81 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
     }
 
     /**
-     * Given a directions object, return the applicable bearing (8 way only)
+     * Given a directions object corresponding to analogue input, return an angle
+     * @param {*} directions - Direction object containing UP, DOWN, LEFT, RIGHT values
+     * @param {number} threshold - Threshold for analog input, e.g. 0.1
+     * @returns {number} Calulated angle
+     */
+  }, {
+    key: "mapDirectionsToAngle",
+    value: function mapDirectionsToAngle(directions, threshold) {
+      threshold = threshold || this.axisThreshold;
+
+      // Get the analog values for each direction
+      var up = directions.UP || 0;
+      var down = directions.DOWN || 0;
+      var left = directions.LEFT || 0;
+      var right = directions.RIGHT || 0;
+
+      // Apply threshold
+      up = Math.abs(up) > threshold ? up : 0;
+      down = Math.abs(down) > threshold ? down : 0;
+      left = Math.abs(left) > threshold ? left : 0;
+      right = Math.abs(right) > threshold ? right : 0;
+
+      // Calculate net direction values
+      var x = right - left; // Positive = right, negative = left
+      var y = down - up; // Positive = down, negative = up
+
+      // If no input, return null
+      if (x === 0 && y === 0) {
+        return -1;
+      }
+
+      // Calculate angle using atan2 (returns angle in radians from -π to π)
+      var angle = Math.atan2(y, x);
+      return angle;
+    }
+
+    /**
+     * Given a directions object, return the applicable bearing
      * @param {*} directions
+     * @param {number} threshold - Threshold for analog input, e.g. 0.1
+     * @param {number} numDirections - Number of directions to snap to, 4/8/16/32.
+     * @returns {string} Bearing, e.g. 'N', 'NE', 'E', etc.
      */
   }, {
     key: "mapDirectionsToBearing",
-    value: function mapDirectionsToBearing(directions, threshold) {
-      var threshold = threshold || -.5;
-      if (directions.UP && !(directions.LEFT || directions.RIGHT)) {
-        return 'N';
+    value: function mapDirectionsToBearing(directions, threshold, numDirections) {
+      threshold = threshold || 0;
+      numDirections = numDirections || this.numDirections;
+
+      // Get the analog values for each direction
+      var up = directions.UP || 0;
+      var down = directions.DOWN || 0;
+      var left = directions.LEFT || 0;
+      var right = directions.RIGHT || 0;
+
+      // Apply threshold
+      up = Math.abs(up) > threshold ? up : 0;
+      down = Math.abs(down) > threshold ? down : 0;
+      left = Math.abs(left) > threshold ? left : 0;
+      right = Math.abs(right) > threshold ? right : 0;
+
+      // Calculate net direction values
+      var x = right - left; // Positive = right, negative = left
+      var y = down - up; // Positive = down, negative = up
+
+      // If no input, return empty bearing
+      if (x === 0 && y === 0) {
+        return '';
       }
-      if (directions.RIGHT && directions.UP) {
-        return 'NE';
-      }
-      if (directions.RIGHT && !(directions.UP || directions.DOWN)) {
-        return 'E';
-      }
-      if (directions.RIGHT && directions.DOWN) {
-        return 'SE';
-      }
-      if (directions.DOWN && !(directions.LEFT || directions.RIGHT)) {
-        return 'S';
-      }
-      if (directions.LEFT && directions.DOWN) {
-        return 'SW';
-      }
-      if (directions.LEFT && !(directions.UP || directions.DOWN)) {
-        return 'W';
-      }
-      if (directions.LEFT && directions.UP) {
-        return 'NW';
-      }
-      return '';
+
+      // Calculate angle using atan2 (returns angle in radians from -π to π)
+      var angle = Math.atan2(y, x);
+
+      // Convert to bearing
+      return this.getBearingFromAngle(angle, numDirections);
     }
 
     /**

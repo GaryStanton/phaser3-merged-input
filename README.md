@@ -142,6 +142,29 @@ Then, interrogate your player objects to check for the state of the _action_, ra
         // Player one has just pressed one of the following buttons - Right cluster: South or Left cluster (DPad): East.
         // Instead of comparing arrays directly as above, we're using the included helper function here, which will return any matching buttons that were pressed in this update step.
     }
+
+    // NEW in v1.10.0 - Precise analog input
+    if (player1.direction.ANGLE !== null) {
+        // Use precise angle for smooth rotation (angle in radians)
+        playerSprite.rotation = player1.direction.ANGLE;
+    }
+
+    // Get exact degrees for movement calculations
+    if (player1.direction.DEGREES !== -1) {
+        let radians = Phaser.Math.DegToRad(player1.direction.DEGREES);
+        let speed = 5;
+        playerSprite.x += Math.cos(radians) * speed;
+        playerSprite.y += Math.sin(radians) * speed;
+    }
+
+    // Use analog values for variable movement speed
+    let moveSpeed = Math.max(player1.direction.UP, player1.direction.DOWN, 
+                            player1.direction.LEFT, player1.direction.RIGHT);
+    if (moveSpeed > 0) {
+        // Move faster when stick is pushed further
+        playerSprite.x += player1.direction.RIGHT * moveSpeed * 10;
+        playerSprite.y += player1.direction.DOWN * moveSpeed * 10;
+    }
 ```
 
 ### New in v1.7.0
@@ -163,7 +186,61 @@ Setting them up is easy:
     });
 ```
 
-Note that combo checking only occurrs on gamepad actions. Keyboard combos are still handled by Phaser.  
+Note that combo checking only occurrs on gamepad actions. Keyboard combos are still handled by Phaser.
+
+### New in v1.10.0
+ANALOG INPUT & BEARING IMPROVEMENTS!  
+Enhanced analog input support with precise angle calculations and improved bearing system:
+
+**Precise Angle Calculations:**
+```javascript
+// Get exact angle in radians for smooth movement
+let angle = mergedInput.mapDirectionsToAngle(player1.direction);
+if (angle !== null) {
+    // Use precise analog input for smooth rotation
+    player.sprite.rotation = angle;
+}
+
+// Get exact degrees (0-360) without snapping to bearings
+let degrees = mergedInput.mapDirectionsToDegrees(player1.direction);
+if (degrees !== -1) {
+    // Smooth analog movement in any direction
+    let radians = Phaser.Math.DegToRad(degrees);
+    player.sprite.x += Math.cos(radians) * speed;
+    player.sprite.y += Math.sin(radians) * speed;
+}
+```
+
+
+**Flexible Bearing System:**
+The bearing system now supports variable direction counts and precise analog input:
+```javascript
+// Set number of directions to snap to
+mergedInput.setNumDirections(32); // 4, 8, 16, or 32 directions
+
+// Get bearing that respects analog input strength
+let bearing = mergedInput.mapDirectionsToBearing(player1.direction, 0.1, 16);
+// Threshold of 0.1, snap to 16 directions
+
+// Convert bearing back to exact degrees
+let snapDegrees = mergedInput.mapBearingToDegrees(bearing);
+```
+
+
+**Enhanced Direction Properties:**
+Player direction objects now include precise angle and degree values:
+```javascript
+// New properties available on each player
+player.direction.ANGLE        			// Precise angle in radians (null if no input)
+player.direction.ANGLE_LAST   			// Last valid angle
+player.direction.DEGREES      			// Precise degrees 0-360 (-1 if no input)
+player.direction.DEGREES_LAST 			// Last valid degrees
+player.direction.BEARING_DEGREES 		// Degrees snapped to the closest bearing
+player.direction.BEARING_DEGREES_LAST 	// Last degrees snapped to the closest bearing
+```
+
+
+This update provides much more precise control for analog input devices while maintaining backward compatibility with digital input.  
 
 
 
@@ -182,6 +259,16 @@ Build the plugin including minified version. Targets the dist folder.
 `npm run build`
 
 ## Changelog
+
+v1.10.0 - 2025-08-08  
+Enhanced analog input and bearing system  
+Added `mapDirectionsToAngle()` function for precise angle calculations in radians  
+Added `mapDirectionsToDegrees()` function for exact degree calculations (0-360)  
+Enhanced `mapDirectionsToBearing()` to accept `numDirections` parameter  
+Added `ANGLE`, `ANGLE_LAST`, `DEGREES`, and `DEGREES_LAST` properties to direction objects  
+Improved analog input handling for smoother movement and rotation  
+Better support for variable bearing counts (4, 8, 16, 32 directions)  
+Fixed timestamp updating issues with direction input  
 
 v1.9.0 - 2025-04-20  
 Updates to pointer handling, in relation to player position.  
