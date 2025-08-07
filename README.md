@@ -18,6 +18,7 @@ Each player object contains direction and button actions. These are updated by t
 · (v1.4.0) Button mapping to consistent names such as 'RC_X' for the right cluster of buttons  
 · (v1.4.0) Normalising of gamepad devices, including generating dpad events for gamepads that map them as axis internally  
 · (v1.8.0) 'ButtonCombos' mimic Phaser's 'KeyCombo' functionality for gamepads. 
+· (v1.10.0) Precice analogue, or snap to 4/8/16/32 directions with analogue stick or mouse pointer.
 
 ## Installation
 
