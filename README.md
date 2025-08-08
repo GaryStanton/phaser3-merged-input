@@ -261,6 +261,9 @@ Build the plugin including minified version. Targets the dist folder.
 
 ## Changelog
 
+v1.10.1 - 2025-08-09
+Better detection of last used device. Now works on pointer movement and analogue gamestick movement.
+
 v1.10.0 - 2025-08-08  
 Enhanced analog input and bearing system  
 Added `mapDirectionsToAngle()` function for precise angle calculations in radians  

@@ -1608,6 +1608,11 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
   }, {
     key: "checkPointerInput",
     value: function checkPointerInput() {
+      // Check for pointer movement
+      if (this.systems.input.activePointer.velocity.x != 0 || this.systems.input.activePointer.velocity.y != 0) {
+        this.players[0].setDevice('pointer');
+      }
+
       // Loop through players and check for button presses
       var _iterator13 = _createForOfIteratorHelper(this.players),
         _step13;
@@ -1876,6 +1881,7 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
           if (thisGamepad.leftStick.y < -this.axisThreshold) {
             this.players[thisGamepad.index].direction.UP = Math.abs(thisGamepad.leftStick.y);
             this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+            this.players[thisGamepad.index].setDevice('gamepad');
             if (thisGamepad.fakedpad) {
               this.gamepadFakeDPadPress(thisGamepad, 'UP');
               direction = 'UP';
@@ -1883,6 +1889,7 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
           } else if (thisGamepad.leftStick.y > this.axisThreshold) {
             this.players[thisGamepad.index].direction.DOWN = thisGamepad.leftStick.y;
             this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+            this.players[thisGamepad.index].setDevice('gamepad');
             if (thisGamepad.fakedpad) {
               this.gamepadFakeDPadPress(thisGamepad, 'DOWN');
               direction = 'DOWN';
@@ -1895,6 +1902,7 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
           if (thisGamepad.leftStick.x < -this.axisThreshold) {
             this.players[thisGamepad.index].direction.LEFT = Math.abs(thisGamepad.leftStick.x);
             this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+            this.players[thisGamepad.index].setDevice('gamepad');
             if (thisGamepad.fakedpad) {
               this.gamepadFakeDPadPress(thisGamepad, 'LEFT');
               direction = 'LEFT';
@@ -1902,6 +1910,7 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
           } else if (thisGamepad.leftStick.x > this.axisThreshold) {
             this.players[thisGamepad.index].direction.RIGHT = thisGamepad.leftStick.x;
             this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+            this.players[thisGamepad.index].setDevice('gamepad');
             if (thisGamepad.fakedpad) {
               this.gamepadFakeDPadPress(thisGamepad, 'RIGHT');
               direction = 'RIGHT';
@@ -1919,9 +1928,11 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
           if (thisGamepad.rightStick.y < -this.axisThreshold) {
             this.players[thisGamepad.index].direction_secondary.UP = Math.abs(thisGamepad.rightStick.y);
             this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+            this.players[thisGamepad.index].setDevice('gamepad');
           } else if (thisGamepad.rightStick.y > this.axisThreshold) {
             this.players[thisGamepad.index].direction_secondary.DOWN = thisGamepad.rightStick.y;
             this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+            this.players[thisGamepad.index].setDevice('gamepad');
           } else {
             this.players[thisGamepad.index].direction_secondary.UP = 0;
             this.players[thisGamepad.index].direction_secondary.DOWN = 0;
@@ -1929,9 +1940,11 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
           if (thisGamepad.rightStick.x < -this.axisThreshold) {
             this.players[thisGamepad.index].direction_secondary.LEFT = Math.abs(thisGamepad.rightStick.x);
             this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+            this.players[thisGamepad.index].setDevice('gamepad');
           } else if (thisGamepad.rightStick.x > this.axisThreshold) {
             this.players[thisGamepad.index].direction_secondary.RIGHT = thisGamepad.rightStick.x;
             this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+            this.players[thisGamepad.index].setDevice('gamepad');
           } else {
             this.players[thisGamepad.index].direction_secondary.LEFT = 0;
             this.players[thisGamepad.index].direction_secondary.RIGHT = 0;

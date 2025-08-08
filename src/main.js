@@ -727,6 +727,11 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * Iterate through players and check for interaction with defined pointer buttons
 	 */
 	checkPointerInput() {
+		// Check for pointer movement
+		if (this.systems.input.activePointer.velocity.x != 0 || this.systems.input.activePointer.velocity.y != 0) {
+			this.players[0].setDevice('pointer');
+		}
+
 		// Loop through players and check for button presses
 		for (let thisPlayer of this.players) {
 			// Loop through all the keys assigned to this player
@@ -924,6 +929,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			if (thisGamepad.leftStick.y < -this.axisThreshold) {
 				this.players[thisGamepad.index].direction.UP = Math.abs(thisGamepad.leftStick.y)
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+				this.players[thisGamepad.index].setDevice('gamepad');
 
 				if (thisGamepad.fakedpad) {
 					this.gamepadFakeDPadPress(thisGamepad, 'UP');
@@ -933,6 +939,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			else if (thisGamepad.leftStick.y > this.axisThreshold) {
 				this.players[thisGamepad.index].direction.DOWN = thisGamepad.leftStick.y
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+				this.players[thisGamepad.index].setDevice('gamepad');
 
 				if (thisGamepad.fakedpad) {
 					this.gamepadFakeDPadPress(thisGamepad, 'DOWN');
@@ -948,6 +955,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			if (thisGamepad.leftStick.x < -this.axisThreshold) {
 				this.players[thisGamepad.index].direction.LEFT = Math.abs(thisGamepad.leftStick.x)
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+				this.players[thisGamepad.index].setDevice('gamepad');
 
 				if (thisGamepad.fakedpad) {
 					this.gamepadFakeDPadPress(thisGamepad, 'LEFT');
@@ -957,6 +965,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			else if (thisGamepad.leftStick.x > this.axisThreshold) {
 				this.players[thisGamepad.index].direction.RIGHT = thisGamepad.leftStick.x
 				this.players[thisGamepad.index].direction.TIMESTAMP = this.scene.sys.time.now;
+				this.players[thisGamepad.index].setDevice('gamepad');
 
 				if (thisGamepad.fakedpad) {
 					this.gamepadFakeDPadPress(thisGamepad, 'RIGHT');
@@ -977,10 +986,12 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			if (thisGamepad.rightStick.y < -this.axisThreshold) {
 				this.players[thisGamepad.index].direction_secondary.UP = Math.abs(thisGamepad.rightStick.y)
 				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+				this.players[thisGamepad.index].setDevice('gamepad');
 			}
 			else if (thisGamepad.rightStick.y > this.axisThreshold) {
 				this.players[thisGamepad.index].direction_secondary.DOWN = thisGamepad.rightStick.y
 				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+				this.players[thisGamepad.index].setDevice('gamepad');
 			}
 			else {
 				this.players[thisGamepad.index].direction_secondary.UP = 0;
@@ -990,10 +1001,12 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			if (thisGamepad.rightStick.x < -this.axisThreshold) {
 				this.players[thisGamepad.index].direction_secondary.LEFT = Math.abs(thisGamepad.rightStick.x)
 				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+				this.players[thisGamepad.index].setDevice('gamepad');
 			}
 			else if (thisGamepad.rightStick.x > this.axisThreshold) {
 				this.players[thisGamepad.index].direction_secondary.RIGHT = thisGamepad.rightStick.x
 				this.players[thisGamepad.index].direction_secondary.TIMESTAMP = this.scene.sys.time.now;
+				this.players[thisGamepad.index].setDevice('gamepad');
 			}
 			else {
 				this.players[thisGamepad.index].direction_secondary.LEFT = 0;
