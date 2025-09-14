@@ -390,6 +390,8 @@ var controlManager = /*#__PURE__*/function () {
           'DOWN': 0,
           'LEFT': 0,
           'RIGHT': 0,
+          'ANGLE': 0,
+          'ANGLE_LAST': 0,
           'BEARING': '',
           'BEARING_LAST': '',
           'DEGREES': 0,
@@ -401,6 +403,8 @@ var controlManager = /*#__PURE__*/function () {
           'DOWN': 0,
           'LEFT': 0,
           'RIGHT': 0,
+          'ANGLE': 0,
+          'ANGLE_LAST': 0,
           'BEARING': '',
           'DEGREES': 0,
           'BEARING_LAST': '',
@@ -516,7 +520,7 @@ var controlManager = /*#__PURE__*/function () {
         controls.keys['B' + i] = [];
       }
 
-      // Add timers 
+      // Add timers
       for (var _i = 0; _i <= numberOfButtons; _i++) {
         controls.timers['B' + _i] = {
           'pressed': 0,
@@ -830,7 +834,7 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
           thisPlayer.pointer.POINTERANGLE = typeof thisPlayer.pointer.POINTERANGLE != 'undefined' ? thisPlayer.pointer.POINTERANGLE : '';
           thisPlayer.pointer.POINTERDIRECTION = typeof thisPlayer.pointer.POINTERDIRECTION != 'undefined' ? thisPlayer.pointer.POINTERDIRECTION : '';
           thisPlayer.pointer.PLAYERPOS = typeof thisPlayer.pointer.PLAYERPOS != 'undefined' ? thisPlayer.pointer.PLAYERPOS : '';
-          thisPlayer.direction.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction);
+          thisPlayer.direction.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction, this.axisThreshold, thisPlayer.gamepad && thisPlayer.gamepad.leftStick ? thisPlayer.gamepad.leftStick : null);
           thisPlayer.direction.ANGLE_LAST = thisPlayer.direction.ANGLE != '' ? thisPlayer.direction.ANGLE : thisPlayer.direction.ANGLE_LAST;
           thisPlayer.direction.DEGREES = thisPlayer.direction.ANGLE !== -1 ? Math.round(Phaser.Math.RadToDeg(thisPlayer.direction.ANGLE) * 100) / 100 : -1;
           thisPlayer.direction.DEGREES_LAST = thisPlayer.direction.DEGREES != -1 ? thisPlayer.direction.DEGREES : thisPlayer.direction.DEGREES_LAST;
@@ -838,7 +842,7 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
           thisPlayer.direction.BEARING_LAST = thisPlayer.direction.BEARING != '' ? thisPlayer.direction.BEARING : thisPlayer.direction.BEARING_LAST;
           thisPlayer.direction.BEARING_DEGREES = thisPlayer.direction.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING)) : 0;
           thisPlayer.direction.BEARING_DEGREES_LAST = thisPlayer.direction.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING_LAST)) : 0;
-          thisPlayer.direction_secondary.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction_secondary);
+          thisPlayer.direction_secondary.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction_secondary, this.axisThreshold, thisPlayer.gamepad && thisPlayer.gamepad.rightStick ? thisPlayer.gamepad.rightStick : null);
           thisPlayer.direction_secondary.ANGLE_LAST = thisPlayer.direction_secondary.ANGLE != '' ? thisPlayer.direction_secondary.ANGLE : thisPlayer.direction_secondary.ANGLE_LAST;
           thisPlayer.direction_secondary.DEGREES = thisPlayer.direction_secondary.ANGLE !== -1 ? Math.round(Phaser.Math.RadToDeg(thisPlayer.direction_secondary.ANGLE) * 100) / 100 : -1;
           thisPlayer.direction_secondary.DEGREES_LAST = thisPlayer.direction_secondary.DEGREES != -1 ? thisPlayer.direction_secondary.DEGREES : thisPlayer.direction_secondary.DEGREES_LAST;
@@ -2177,13 +2181,21 @@ var MergedInput = /*#__PURE__*/function (_Phaser$Plugins$Scene) {
      * Given a directions object corresponding to analogue input, return an angle
      * @param {*} directions - Direction object containing UP, DOWN, LEFT, RIGHT values
      * @param {number} threshold - Threshold for analog input, e.g. 0.1
+     * @param {object} rawStick - Optional raw stick object with x,y values for better precision
      * @returns {number} Calulated angle
      */
   }, {
     key: "mapDirectionsToAngle",
-    value: function mapDirectionsToAngle(directions, threshold) {
+    value: function mapDirectionsToAngle(directions, threshold, rawStick) {
       threshold = threshold || this.axisThreshold;
 
+      // If we have raw stick data, use that for better precision
+      if (rawStick && (Math.abs(rawStick.x) > threshold || Math.abs(rawStick.y) > threshold)) {
+        var _angle = Math.atan2(rawStick.y, rawStick.x);
+        return _angle;
+      }
+
+      // Fallback to direction object processing
       // Get the analog values for each direction
       var up = directions.UP || 0;
       var down = directions.DOWN || 0;
