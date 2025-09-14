@@ -108,7 +108,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisPlayer.pointer.POINTERDIRECTION = typeof thisPlayer.pointer.POINTERDIRECTION != 'undefined' ? thisPlayer.pointer.POINTERDIRECTION : ''
 			thisPlayer.pointer.PLAYERPOS = typeof thisPlayer.pointer.PLAYERPOS != 'undefined' ? thisPlayer.pointer.PLAYERPOS : ''
 
-			thisPlayer.direction.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction);
+			thisPlayer.direction.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction, this.axisThreshold, thisPlayer.gamepad && thisPlayer.gamepad.leftStick ? thisPlayer.gamepad.leftStick : null);
 			thisPlayer.direction.ANGLE_LAST = thisPlayer.direction.ANGLE != '' ? thisPlayer.direction.ANGLE : thisPlayer.direction.ANGLE_LAST;
 			thisPlayer.direction.DEGREES = thisPlayer.direction.ANGLE !== -1 ? Math.round(Phaser.Math.RadToDeg(thisPlayer.direction.ANGLE) * 100) / 100 : -1;
 			thisPlayer.direction.DEGREES_LAST = thisPlayer.direction.DEGREES != -1 ? thisPlayer.direction.DEGREES : thisPlayer.direction.DEGREES_LAST;
@@ -118,7 +118,7 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 			thisPlayer.direction.BEARING_DEGREES = thisPlayer.direction.BEARING != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING)) : 0;
 			thisPlayer.direction.BEARING_DEGREES_LAST = thisPlayer.direction.BEARING_LAST != '' ? parseFloat(this.mapBearingToDegrees(thisPlayer.direction.BEARING_LAST)) : 0;
 
-			thisPlayer.direction_secondary.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction_secondary);
+			thisPlayer.direction_secondary.ANGLE = this.mapDirectionsToAngle(thisPlayer.direction_secondary, this.axisThreshold, thisPlayer.gamepad && thisPlayer.gamepad.rightStick ? thisPlayer.gamepad.rightStick : null);
 			thisPlayer.direction_secondary.ANGLE_LAST = thisPlayer.direction_secondary.ANGLE != '' ? thisPlayer.direction_secondary.ANGLE : thisPlayer.direction_secondary.ANGLE_LAST;
 			thisPlayer.direction_secondary.DEGREES = thisPlayer.direction_secondary.ANGLE !== -1 ? Math.round(Phaser.Math.RadToDeg(thisPlayer.direction_secondary.ANGLE) * 100) / 100 : -1;
 			thisPlayer.direction_secondary.DEGREES_LAST = thisPlayer.direction_secondary.DEGREES != -1 ? thisPlayer.direction_secondary.DEGREES : thisPlayer.direction_secondary.DEGREES_LAST;
@@ -1232,11 +1232,19 @@ export default class MergedInput extends Phaser.Plugins.ScenePlugin {
 	 * Given a directions object corresponding to analogue input, return an angle
 	 * @param {*} directions - Direction object containing UP, DOWN, LEFT, RIGHT values
 	 * @param {number} threshold - Threshold for analog input, e.g. 0.1
+	 * @param {object} rawStick - Optional raw stick object with x,y values for better precision
 	 * @returns {number} Calulated angle
 	 */
-	mapDirectionsToAngle(directions, threshold) {
+	mapDirectionsToAngle(directions, threshold, rawStick) {
 		threshold = threshold || this.axisThreshold;
 
+		// If we have raw stick data, use that for better precision
+		if (rawStick && (Math.abs(rawStick.x) > threshold || Math.abs(rawStick.y) > threshold)) {
+			let angle = Math.atan2(rawStick.y, rawStick.x);
+			return angle;
+		}
+
+		// Fallback to direction object processing
 		// Get the analog values for each direction
 		let up = directions.UP || 0;
 		let down = directions.DOWN || 0;

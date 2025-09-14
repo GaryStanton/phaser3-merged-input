@@ -21,7 +21,7 @@ export default class controlManager {
             padConfig = pad_dualshock;
         }
         else {
-            
+
         }
 
         return padConfig;
@@ -34,6 +34,8 @@ export default class controlManager {
                 'DOWN': 0,
                 'LEFT': 0,
                 'RIGHT': 0,
+                'ANGLE': 0,
+                'ANGLE_LAST': 0,
                 'BEARING': '',
                 'BEARING_LAST': '',
                 'DEGREES': 0,
@@ -45,6 +47,8 @@ export default class controlManager {
                 'DOWN': 0,
                 'LEFT': 0,
                 'RIGHT': 0,
+                'ANGLE': 0,
+                'ANGLE_LAST': 0,
                 'BEARING': '',
                 'DEGREES': 0,
                 'BEARING_LAST': '',
@@ -155,7 +159,7 @@ export default class controlManager {
             controls.keys['B' + i] = [];
         }
 
-        // Add timers 
+        // Add timers
         for (let i = 0; i <= numberOfButtons; i++) {
             controls.timers['B' + i] = {
                 'pressed': 0,
@@ -184,7 +188,7 @@ export default class controlManager {
             this.position.x = x;
             this.position.y = y;
         }
-        
+
 
         return controls;
     }

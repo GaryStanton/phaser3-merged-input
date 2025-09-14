@@ -2,7 +2,7 @@
 export default class Debug extends Phaser.Scene {
 	/**
 	 * Debug scene
-	 * 
+	 *
 	 * @extends Phaser.Scene
 	*/
 	constructor() {
@@ -11,14 +11,14 @@ export default class Debug extends Phaser.Scene {
 
 	/**
 	 * Init
-	 * @param {*} data 
+	 * @param {*} data
 	 */
 	init(data) {
 
 	}
 
     preload() {
-       
+
     }
 
 	/**
